@@ -19,32 +19,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
-.outer{
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
-  display:grid;
-  place-items:center;
-  background:#ffffff;
-}
-.fit{
-  width:1366px;
-  height:1024px;
-  transform-origin:center center;
-  transform:scale(calc(min(100vw/1366, (var(--vh, 1vh)*100)/1024)));
-  background:#ffffff;
-}
-/* —— 全站沉浸式設定 —— */
-    html,body{height:100%;margin:0;overscroll-behavior:none;touch-action:none;background:#ffffff;color:#3b3f44;}
+    /* —— 全站沉浸式設定 —— */
+    html,body{height:100%;margin:0;overscroll-behavior:none;touch-action:manipulation;background:#ffffff;color:#3b3f44;}
     *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
     input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
 
     /* 自動縮放舞台至 1366×1024 */
-    
-      
-  
-  
+    .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;}
+      .fit{
+  width:1366px;
+  height:1024px;
+   /* ← 改這行 */
+
 }
+  max-width:100%;
+  max-height:100%;
+}
+
 
     :root{
       --bg:#ffffff;
@@ -79,33 +70,42 @@
       font-family:"Noto Sans TC",sans-serif;
       box-shadow:0 6px 0 rgba(0,0,0,0.12),0 12px 32px rgba(0,0,0,0.06);
       transition:transform .08s ease,background .15s ease,box-shadow .15s ease;
-    }
+     z-index:10; pointer-events:auto; cursor:pointer; }
     .cta:hover{background:var(--button-hover);transform:translateY(-1px);box-shadow:0 7px 0 rgba(0,0,0,0.12),0 14px 36px rgba(0,0,0,0.08);}
     .cta:active{transform:translateY(1px);box-shadow:0 4px 0 rgba(0,0,0,0.12),0 8px 20px rgba(0,0,0,0.06);}
+  
+/* —— Compact 縮小版（當縮放比 < 0.9 時）—— */
+.compact .text-block{ font-size:24px; line-height:1.7; }
+.compact .cta{ font-size:24px; padding:14px 28px; bottom:60px; right:60px; }
+.compact .q{ font-size:30px; }
+.compact .opt{ font-size:22px; padding:18px 24px; }
+.compact .label{ font-size:28px; }
+.compact .pill{ padding:14px 24px; }
+.compact h1{ font-size:36px; }
+.compact .subtitle{ font-size:26px; }
+
+
 </style>
   <style>
-.outer{
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
-  display:grid;
-  place-items:center;
-  background:#ffffff;
-}
-.fit{
-  width:1366px;
-  height:1024px;
-  transform-origin:center center;
-  transform:scale(calc(min(100vw/1366, (var(--vh, 1vh)*100)/1024)));
-  background:#ffffff;
-}
-/* iPad / iOS Safari：避免 100vh 位移 */
-   /* 先給舊機 fallback */
+  /* iPad / iOS Safari：避免 100vh 位移 */
+  .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;} /* 先給舊機 fallback */
   @supports (height: 100dvh) {
-     /* 新版 iOS / iPadOS 用 dvh */
+    .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;} /* 新版 iOS / iPadOS 用 dvh */
   }
   /* 再準備一個 --vh 變數備援（超舊版 iOS 也穩）*/
   .outer.use-vh-var{ height: calc(var(--vh, 1vh) * 100); }
+
+/* —— Compact 縮小版（當縮放比 < 0.9 時）—— */
+.compact .text-block{ font-size:24px; line-height:1.7; }
+.compact .cta{ font-size:24px; padding:14px 28px; bottom:60px; right:60px; }
+.compact .q{ font-size:30px; }
+.compact .opt{ font-size:22px; padding:18px 24px; }
+.compact .label{ font-size:28px; }
+.compact .pill{ padding:14px 24px; }
+.compact h1{ font-size:36px; }
+.compact .subtitle{ font-size:26px; }
+
+
 </style>
 <script>
   // 讓極端情境下也穩：用 visualViewport 設定 --vh
@@ -143,5 +143,24 @@
       <a class="cta" href="page3.html">準備好了</a>
     </div>
   </div>
+
+<script>
+(function(){
+  var BASE_W = 1366;
+  var BASE_H = 1024;
+  function checkCompact(){
+    var vv = window.visualViewport;
+    var vw = vv ? vv.width : window.innerWidth;
+    var vh = vv ? vv.height : window.innerHeight;
+    var scale = Math.min(vw/BASE_W, vh/BASE_H);
+    document.documentElement.classList.toggle('compact', scale < 0.9);
+  }
+  checkCompact();
+  if (window.visualViewport) visualViewport.addEventListener('resize', checkCompact, {passive:true});
+  window.addEventListener('resize', checkCompact, {passive:true});
+  window.addEventListener('orientationchange', checkCompact);
+})();
+</script>
+
 </body>
 </html>
