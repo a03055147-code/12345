@@ -11,44 +11,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    :root{ --bg:#fff; --text:#3b3f44; --button:#bfefff; --button-hover:#a8e6ff; --_scale:1; --vh:1vh; }
-    html,body{ height:100%; margin:0; overscroll-behavior:none; touch-action:manipulation; background:#fff; color:var(--text); }
+    :root{ --bg:#ffffff; --text:#3b3f44; --button:#bfefff; --button-hover:#a8e6ff; --_scale:1; --vh:1vh; }
+    html,body{ height:100%; margin:0; overscroll-behavior:none; touch-action:manipulation; background:#fff; color:#3b3f44; }
     *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-    input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
     .outer{ width:100vw; height:100vh; overflow:hidden; display:grid; place-items:center; background:#fff; pointer-events:none; }
-    .outer.use-vh-var{ height:calc(var(--vh) * 100); }
-    .fit{ width:1366px; height:1024px; transform-origin:center; -webkit-transform:translateZ(0) scale(var(--_scale)); transform:translateZ(0) scale(var(--_scale)); pointer-events:auto; position:relative; background:#fff; }
-    .stage{ width:100%; height:100%; position:relative; }
-    /* 新增：把文字與按鈕放進同一個面板，用正常文流排列，按鈕自然會跟在文字後面 */
-    .panel{
-      position:absolute;
-      left:20%; right:20%; top:18%;
-      font-family:"Noto Sans TC",sans-serif;
-      color:var(--text);
-      display:flex;
-      flex-direction:column;
-      gap:28px;
-    }
-    .panel p{ margin:0; font-size:28px; line-height:1.9; font-weight:700; }
-    .cta{
-      align-self:flex-end; /* 與原本右下角感覺接近，但放在文字區塊內的右側 */
-      display:inline-block; padding:18px 36px; border-radius:18px;
-      background:var(--button); color:#1f2a33; text-decoration:none; font-weight:900; font-size:28px;
-      font-family:"Noto Sans TC",sans-serif;
-      box-shadow:0 6px 0 rgba(0,0,0,.12),0 12px 32px rgba(0,0,0,.06);
-      transition:transform .08s ease,background .15s ease,box-shadow .15s ease;
-      z-index:10; -webkit-tap-highlight-color:transparent; cursor:pointer; touch-action:manipulation;
-    }
+    .outer.use-vh-var{ height:calc(var(--vh)*100); }
+    .fit{ width:1366px; height:1024px; transform-origin:center; -webkit-transform:translateZ(0) scale(var(--_scale)); transform:translateZ(0) scale(var(--_scale)); background:#fff; pointer-events:auto; position:relative; display:flex; align-items:flex-start; justify-content:center; }
+    .stage{ width:100%; height:100%; position:relative; background:var(--bg); padding:120px 160px 0; box-sizing:border-box; }
+    .text-block{ font-family:"Noto Sans TC",sans-serif; font-size:28px; line-height:1.9; font-weight:700; color:var(--text); }
+    .cta-row{ margin-top:28px; display:flex; }
+    .cta{ display:inline-block; padding:16px 28px; border-radius:16px; background:var(--button); color:#1f2a33; text-decoration:none; font-weight:900; font-size:26px; font-family:"Noto Sans TC",sans-serif; box-shadow:0 6px 0 rgba(0,0,0,.12),0 12px 32px rgba(0,0,0,.06); transition:transform .08s ease,background .15s ease,box-shadow .15s ease; z-index:10; -webkit-tap-highlight-color:transparent; cursor:pointer; touch-action:manipulation; }
     .cta:hover{ background:var(--button-hover); transform:translateY(-1px); box-shadow:0 7px 0 rgba(0,0,0,.12),0 14px 36px rgba(0,0,0,.08); }
     .cta:active{ transform:translateY(1px); box-shadow:0 4px 0 rgba(0,0,0,.12),0 8px 20px rgba(0,0,0,.06); }
-
     video,canvas,.flash,.countdown{ pointer-events:none; }
   </style>
   <script>
     (function(){
       function setVH(){
         var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-        document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+        document.documentElement.style.setProperty('--vh', (h*0.01) + 'px');
         var s = Math.min(window.innerWidth/1366, h/1024);
         document.documentElement.style.setProperty('--_scale', s);
       }
@@ -65,18 +46,15 @@
 <body>
   <div class="outer">
     <div class="stage fit">
-      <div class="panel">
-        <div class="text-block">
-          <p>你好！你手上的氣圍有點特別耶！你是新來的吧？<br>
-          我想向你介紹我的幾個朋友，<br>
-          他們超會看人（的手），</p>
-          <p>這裡的人，名字可不是用講的，<br>
-          而是⋯⋯用「手」取的。<br>
-          他們會觀察你的習慣、感覺或氣場，<br>
-          最後幫你取一個屬於你的「手語名字」。</p>
-          <p>「準備好了嗎？我們開始吧！」</p>
+      <div class="text-block">
+        <p>你好！你手上的氣圍有點特別耶！你是新來的吧？<br>
+        我想向你介紹我的幾個朋友，<br>他們超會看人（的手），</p>
+        <p>這裡的人，名字可不是用講的，<br>而是⋯⋯用「手」取的。<br>
+        他們會觀察你的習慣、感覺或氣場，<br>最後幫你取一個屬於你的「手語名字」。</p>
+        <p>「準備好了嗎？我們開始吧！」</p>
+        <div class="cta-row">
+          <a class="cta" href="page3.html">準備好了</a>
         </div>
-        <a class="cta" href="page3.html">準備好了</a>
       </div>
     </div>
   </div>

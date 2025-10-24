@@ -1,0 +1,29 @@
+
+/* page4 override: reposition question area for iPad Safari */
+html,body{touch-action:manipulation;}
+.outer{pointer-events:none;}
+.fit{pointer-events:auto; -webkit-transform:translateZ(0) scale(var(--_scale,1)); transform:translateZ(0) scale(var(--_scale,1));}
+
+/* Move the whole Q&A area down a bit */
+.qwrap, .question-wrap, .question-area{ position:relative; top:90px; }
+
+/* Ensure the leading line is visible and not overlapped */
+.lead{
+  position:relative;
+  display:block;
+  margin:0 120px 20px 120px;
+  z-index:5;
+}
+
+/* Options container spacing */
+.options, .opts, .opt-group{
+  position:relative;
+  margin:12px 120px 0 120px;
+  z-index:5;
+}
+
+/* Buttons stay tappable above any cover layers */
+a,button,.btn,.opt,.cta{ position:relative; z-index:10; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+
+/* Any full-bleed visual layer should not eat events */
+video,canvas,.flash,.countdown,.cover{ pointer-events:none; }
