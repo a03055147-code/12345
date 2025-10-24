@@ -19,31 +19,51 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
-    /* —— 全站沉浸式設定 —— */
-    html,body{height:100%;margin:0;overscroll-behavior:none;touch-action:manipulation;background:#ffffff;color:#3b3f44;}
-    *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
-    input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
-
-    /* 自動縮放舞台至 1366×1024 */
-    .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;}
-      .fit{
-  width:1366px;
-  height:1024px;
-   /* ← 改這行 */
-
-}
-  max-width:100%;
-  max-height:100%;
-}
-
-
     :root{
       --bg:#ffffff;
       --text:#3b3f44;
       --button:#bfefff;
       --button-hover:#a8e6ff;
+      --_scale: 1;
+      --vh: 1vh; /* fallback */
     }
 
+    /* —— 基礎舞台 —— */
+    html,body{
+      height:100%;
+      margin:0;
+      overscroll-behavior:none;
+      touch-action:manipulation; /* 取代 touch-action:none */
+      background:#ffffff;
+      color:#3b3f44;
+    }
+    *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+    input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
+
+    .outer{
+      width:100vw;
+      height:100vh;
+      overflow:hidden;
+      display:grid;
+      place-items:center;
+      background:#ffffff;
+      pointer-events:none; /* 外層不吃事件，避免覆蓋 */
+    }
+    /* 兼容舊版 iOS 的 100vh 問題 */
+    .outer.use-vh-var{ height: calc(var(--vh) * 100); }
+
+    .fit{
+      width:1366px;
+      height:1024px;
+      transform-origin:center center;
+      -webkit-transform: translateZ(0) scale(var(--_scale));
+      transform: translateZ(0) scale(var(--_scale));
+      background:#ffffff;
+      pointer-events:auto; /* 讓舞台恢復互動 */
+      position:relative;
+    }
+
+    /* 內文區塊 */
     .stage{width:1366px;height:1024px;position:relative;background:var(--bg);}
     .text-block{
       position:absolute;
@@ -55,6 +75,7 @@
       color:var(--text);
     }
 
+    /* CTA 按鈕：提高層級避免被覆蓋 */
     .cta{
       position:absolute;
       right:80px;
@@ -70,59 +91,39 @@
       font-family:"Noto Sans TC",sans-serif;
       box-shadow:0 6px 0 rgba(0,0,0,0.12),0 12px 32px rgba(0,0,0,0.06);
       transition:transform .08s ease,background .15s ease,box-shadow .15s ease;
-     z-index:10; pointer-events:auto; cursor:pointer; }
+      z-index:10;
+      -webkit-tap-highlight-color: transparent;
+      cursor:pointer;
+      touch-action:manipulation;
+    }
     .cta:hover{background:var(--button-hover);transform:translateY(-1px);box-shadow:0 7px 0 rgba(0,0,0,0.12),0 14px 36px rgba(0,0,0,0.08);}
     .cta:active{transform:translateY(1px);box-shadow:0 4px 0 rgba(0,0,0,0.12),0 8px 20px rgba(0,0,0,0.06);}
-  
-/* —— Compact 縮小版（當縮放比 < 0.9 時）—— */
-.compact .text-block{ font-size:24px; line-height:1.7; }
-.compact .cta{ font-size:24px; padding:14px 28px; bottom:60px; right:60px; }
-.compact .q{ font-size:30px; }
-.compact .opt{ font-size:22px; padding:18px 24px; }
-.compact .label{ font-size:28px; }
-.compact .pill{ padding:14px 24px; }
-.compact h1{ font-size:36px; }
-.compact .subtitle{ font-size:26px; }
 
+    /* 任何鋪滿但不需互動的元素（這頁暫無，但預留保險） */
+    video, canvas, .flash, .countdown{ pointer-events:none; }
+  </style>
 
-</style>
-  <style>
-  /* iPad / iOS Safari：避免 100vh 位移 */
-  .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;} /* 先給舊機 fallback */
-  @supports (height: 100dvh) {
-    .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;} /* 新版 iOS / iPadOS 用 dvh */
-  }
-  /* 再準備一個 --vh 變數備援（超舊版 iOS 也穩）*/
-  .outer.use-vh-var{ height: calc(var(--vh, 1vh) * 100); }
+  <script>
+    (function(){
+      // 1) 修正 iOS 100vh：以 visualViewport 設定 --vh 變數
+      function setVH(){
+        var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+        document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+        // 2) 計算縮放值（基於 1366x1024）並存為 --_scale
+        var s = Math.min(window.innerWidth/1366, h/1024);
+        document.documentElement.style.setProperty('--_scale', s);
+      }
+      setVH();
+      window.addEventListener('resize', setVH, {passive:true});
+      window.addEventListener('orientationchange', setVH);
+      window.addEventListener('pageshow', setVH); // iOS bfcache 回來時重算
 
-/* —— Compact 縮小版（當縮放比 < 0.9 時）—— */
-.compact .text-block{ font-size:24px; line-height:1.7; }
-.compact .cta{ font-size:24px; padding:14px 28px; bottom:60px; right:60px; }
-.compact .q{ font-size:30px; }
-.compact .opt{ font-size:22px; padding:18px 24px; }
-.compact .label{ font-size:28px; }
-.compact .pill{ padding:14px 24px; }
-.compact h1{ font-size:36px; }
-.compact .subtitle{ font-size:26px; }
-
-
-</style>
-<script>
-  // 讓極端情境下也穩：用 visualViewport 設定 --vh
-  (function(){
-    function setVH(){
-      var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-      document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
-    }
-    setVH();
-    window.addEventListener('resize', setVH);
-    window.addEventListener('orientationchange', setVH);
-    // 給 .outer 一個 class 以啟用備援
-    addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.outer').forEach(n => n.classList.add('use-vh-var'));
-    });
-  })();
-</script>
+      // 啟用 .outer 的 vh 變數高度模式
+      document.addEventListener('DOMContentLoaded', function(){
+        document.querySelectorAll('.outer').forEach(function(n){ n.classList.add('use-vh-var'); });
+      }, {passive:true});
+    })();
+  </script>
 </head>
 
 <body>
@@ -143,24 +144,5 @@
       <a class="cta" href="page3.html">準備好了</a>
     </div>
   </div>
-
-<script>
-(function(){
-  var BASE_W = 1366;
-  var BASE_H = 1024;
-  function checkCompact(){
-    var vv = window.visualViewport;
-    var vw = vv ? vv.width : window.innerWidth;
-    var vh = vv ? vv.height : window.innerHeight;
-    var scale = Math.min(vw/BASE_W, vh/BASE_H);
-    document.documentElement.classList.toggle('compact', scale < 0.9);
-  }
-  checkCompact();
-  if (window.visualViewport) visualViewport.addEventListener('resize', checkCompact, {passive:true});
-  window.addEventListener('resize', checkCompact, {passive:true});
-  window.addEventListener('orientationchange', checkCompact);
-})();
-</script>
-
 </body>
 </html>
