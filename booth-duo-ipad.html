@@ -47,8 +47,8 @@
     video { transform: scaleX(-1); } /* 鏡像預覽 */
 
   .char{
-  position:absolute; left: -100px !important; bottom: -60px !important;
-  width: 1200px !important; /* 520 → 720（可改 640/680/760 視覺調整） */
+  position:absolute; left: -40px; bottom: -20px;
+  width: 1080px; /* 520 → 720（可改 640/680/760 視覺調整） */
   pointer-events:none; image-rendering:auto;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,.25));
 }
@@ -207,7 +207,7 @@
       // 再畫角色（舞台 1366×1024；char CSS: left:68, bottom:24, width:520）
      // 舞台 1366×1024；char CSS: left:68, bottom:24, width:720
 const stageW = 1366, stageH = 1024;
-const left = -100, bottom = -60, cssW = 1200; // ← 520 → 720
+const left = -40, bottom = -20, cssW = 1080; // ← 520 → 720
       const scaleX = vw / stageW, scaleY = vh / stageH;
 
       const dw = cssW * scaleX;
