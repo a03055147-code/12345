@@ -14,11 +14,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
-    html, body { overscroll-behavior:none; touch-action:manipulation; background:#000; }
+    html, body { overscroll-behavior:none; touch-action:manipulation; background:#000; margin:0; }
     * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
     body { font-family:"Noto Sans TC","Manrope",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
 
-    .outer{ width:100vw; height:100vh; overflow:hidden; display:grid; place-items:center; background:#000; }
+    /* ✅ iPad 高度與安全區 */
+    .outer{
+      width:100vw;
+      height:100vh;
+      height:100dvh;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right)
+               env(safe-area-inset-bottom) env(safe-area-inset-left);
+      display:grid; place-items:center; overflow:hidden; background:#000;
+    }
     .fit{ width:1366px; height:1024px; max-width:100%; max-height:100%; }
 
     .stage{ width:1366px; height:1024px; position:relative; overflow:hidden; background:#000; }
@@ -38,16 +46,6 @@
       filter: drop-shadow(0 8px 24px rgba(0,0,0,.25));
     }
 
-    .badge{
-      position:absolute; left:68px; top:60px;
-      background:rgba(255,255,255,.85); color:#000;
-      padding:8px 14px; border-radius:999px; font-weight:800; font-size:14px; letter-spacing:.03em;
-    }
-    .tip{
-      position:absolute; left:68px; top:100px; width:520px;
-      color:#fff; font-weight:900; font-size:34px; line-height:1.5;
-      text-shadow:0 3px 16px rgba(0,0,0,.5);
-    }
     .countdown{
       position:absolute; inset:0; display:grid; place-items:center; pointer-events:none;
       font-weight:900; font-size:140px; color:#fff; text-shadow:0 10px 40px rgba(0,0,0,.45);
@@ -61,47 +59,17 @@
       width:420px; height:120px; border:0; border-radius:16px;
       background:rgba(255,255,255,.92); color:#000; font-weight:900; font-size:28px;
     }
-
-    /* iPad 介面裁切用（現階段不顯示引導字） */
-    .badge, .tip{ display:none !important; }
   </style>
-
-  <style>
-    /* iOS 高度安全處理（兼容舊機） */
-    .outer{ width:100vw; height:100vh; overflow:auto; display:flex; justify-content:center; align-items:center; }
-    @supports (height: 100dvh) {
-      .outer{ width:100vw; height:100vh; }
-    }
-    .outer.use-vh-var{ height: calc(var(--vh, 1vh) * 100); }
-  </style>
-
-  <script>
-    /* 設定 --vh 變數，避免 iOS 工具列影響 100vh */
-    (function(){
-      function setVH(){
-        var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-        document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
-      }
-      setVH();
-      window.addEventListener('resize', setVH);
-      window.addEventListener('orientationchange', setVH);
-      addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.outer').forEach(n => n.classList.add('use-vh-var'));
-      });
-    })();
-  </script>
 </head>
 <body>
   <div class="outer">
     <div class="stage fit" id="stage">
       <video id="video" playsinline autoplay muted></video>
-      <canvas id="canvas" width="1920" height="1080" style="display:none"></canvas>
+      <canvas id="canvas" style="display:none"></canvas>
 
       <!-- 左半邊角色（拍第一張是動作1，第二張換動作2） -->
       <img id="char" class="char" src="動作1.png" alt="角色">
 
-      <div class="badge">iPad 全螢幕模式</div>
-      <div class="tip" id="tip">請和角色一起擺出 <strong>動作 1</strong></div>
       <div id="cd" class="countdown">3</div>
       <div id="flash" class="flash"></div>
 
@@ -113,7 +81,6 @@
     const video   = document.getElementById('video');
     const canvas  = document.getElementById('canvas');
     const charImg = document.getElementById('char');
-    const tip     = document.getElementById('tip');
     const cd      = document.getElementById('cd');
     const flash   = document.getElementById('flash');
     const startBtn= document.getElementById('startBtn');
@@ -126,22 +93,25 @@
     let stream = null;
     const shots = { one:null, two:null };
 
-    /* ✅ 等到 canplay（video 有寬高）才開始拍 */
+    /* ✅ 等到 canplay（video 有寬高）且鎖 4:3 */
     async function startCamera(){
       try{
         if(stream) stream.getTracks().forEach(t=>t.stop());
         stream = await navigator.mediaDevices.getUserMedia({
-          video:{ facingMode:'user', width:{ideal:1280}, height:{ideal:960} },
+          video:{
+            facingMode: 'user',
+            width: { ideal: 1280 },
+            height:{ ideal: 960 },
+            aspectRatio: { ideal: 4/3 }
+          },
           audio:false
         });
         video.srcObject = stream;
 
-        // 等 metadata 與 canplay 就緒
-        await new Promise(res => {
-          const done = () => res();
-          if (video.readyState >= 2 && video.videoWidth && video.videoHeight) return res();
-          video.onloadedmetadata = () => { /* 先拿寬高 */ };
-          video.oncanplay = done;
+        await new Promise(res=>{
+          const ok = ()=> (video.videoWidth>0 && video.videoHeight>0) ? res() : null;
+          video.addEventListener('loadedmetadata', ok, {once:true});
+          video.addEventListener('canplay', ok, {once:true});
         });
         await video.play();
       }catch(e){
@@ -162,51 +132,65 @@
       }
     }
 
-    function capture(){
-      const vw = video.videoWidth, vh = video.videoHeight;
-      if(!vw || !vh){ return null; }
+    function drawMirrored(ctx, img, sx, sy, sw, sh, dx, dy, dw, dh){
+      ctx.save(); ctx.translate(ctx.canvas.width,0); ctx.scale(-1,1);
+      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      ctx.restore();
+    }
 
-      canvas.width = vw; canvas.height = vh;
+    function capture(){
+      let vw = video.videoWidth, vh = video.videoHeight;
+      if(!vw || !vh) return null;
+
+      // 目標：橫式 4:3 畫面
+      let targetW, targetH, sx=0, sy=0, sw=vw, sh=vh;
+      if (vh > vw) {
+        // 直式回傳：以寬為基礎裁成 4:3
+        targetW = vw;
+        targetH = Math.round(vw * 3/4);
+        sy = Math.max(0, Math.floor((vh - targetH) / 2));
+        sh = targetH;
+      } else {
+        // 橫式：直接用原尺寸
+        targetW = vw;
+        targetH = vh;
+      }
+
+      canvas.width  = targetW;
+      canvas.height = targetH;
       const ctx = canvas.getContext('2d');
 
-      /* 先畫相機（鏡像，與預覽一致） */
-      ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      ctx.restore();
+      // 先畫相機（鏡像，與預覽一致）
+      drawMirrored(ctx, video, 0, sy, sw, sh, 0, 0, targetW, targetH);
 
-      /* ✅ 把角色畫在「左半邊」：以舞台 1366×1024 為座標，轉到相機解析度 */
-      const stageW = 1366, stageH = 1024;
-      const scaleX = vw / stageW, scaleY = vh / stageH;
-
-      const slot = { x:0, y:0, w: stageW*0.5, h: stageH }; // 左半邊
-      // 依「contain」策略把角色塞進左半邊
-      const imgW = charImg.naturalWidth || 1000, imgH = charImg.naturalHeight || 1000;
-      const s = Math.min((slot.w*scaleX)/imgW, (slot.h*scaleY)/imgH);
+      // === 把角色畫到「左半邊」（contain 對齊） ===
+      const leftRect = { x:0, y:0, w: canvas.width*0.5, h: canvas.height };
+      const imgW = charImg.naturalWidth  || 1000;
+      const imgH = charImg.naturalHeight || 1000;
+      const s = Math.min(leftRect.w/imgW, leftRect.h/imgH);
       const dw = imgW*s, dh = imgH*s;
-      const dx = (slot.x*scaleX) + ((slot.w*scaleX - dw)/2);
-      const dy = (slot.y*scaleY) + ((slot.h*scaleY - dh)/2);
+      const dx = leftRect.x + (leftRect.w - dw)/2;
+      const dy = leftRect.y + (leftRect.h - dh)/2;
 
-      // 因為整張相機畫面已鏡像，這裡維持鏡像繪製，位置會對齊預覽的左側
-      ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
-      ctx.drawImage(charImg, dx, dy, dw, dh);
-      ctx.restore();
+      drawMirrored(ctx, charImg, 0, 0, imgW, imgH, dx, dy, dw, dh);
 
       flash.classList.add('show');
-      setTimeout(()=>flash.classList.remove('show'), 120);
+      setTimeout(()=>flash.classList.remove('show'), 140);
 
       return canvas.toDataURL('image/jpeg', 0.92);
     }
 
     async function shootSequence(){
       // 第一張
-      tip.innerHTML = '請和角色一起擺出 <strong>動作 1</strong>';
       await countdown();
       shots.one = capture();
 
-      // 第二張
+      // 第二張（換圖後等載入）
       charImg.src = poses[1].img;
-      await new Promise(r => charImg.onload = r); // 確保換圖已載入
-      tip.innerHTML = '請和角色一起擺出 <strong>動作 2</strong>';
+      await new Promise(r => {
+        if (charImg.complete) r();
+        else charImg.onload = r;
+      });
       await countdown();
       shots.two = capture();
 
@@ -215,7 +199,6 @@
       window.location.href = 'booth-export.html';
     }
 
-    /* iOS 需使用者手動點擊觸發鏡頭 */
     startBtn.addEventListener('click', async ()=>{
       startBtn.disabled = true;
       try{
@@ -228,28 +211,9 @@
       }
     });
 
-    /* 背景/前景切換時關閉相機，避免佔用 */
     document.addEventListener('visibilitychange', ()=>{
       if(document.hidden && stream){ stream.getTracks().forEach(t=>t.stop()); }
     });
-  </script>
-
-  <script>
-    /* Compact 檢測（保留原本結構，未顯示的引導字體積會縮） */
-    (function(){
-      var BASE_W = 1366, BASE_H = 1024;
-      function checkCompact(){
-        var vv = window.visualViewport;
-        var vw = vv ? vv.width : window.innerWidth;
-        var vh = vv ? vv.height : window.innerHeight;
-        var scale = Math.min(vw/BASE_W, vh/BASE_H);
-        document.documentElement.classList.toggle('compact', scale < 0.9);
-      }
-      checkCompact();
-      if (window.visualViewport) visualViewport.addEventListener('resize', checkCompact, {passive:true});
-      window.addEventListener('resize', checkCompact, {passive:true});
-      window.addEventListener('orientationchange', checkCompact);
-    })();
   </script>
 </body>
 </html>
