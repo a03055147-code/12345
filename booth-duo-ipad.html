@@ -24,26 +24,17 @@
     body { overscroll-behavior: none; touch-action:manipulation; font-family:"Noto Sans TC","Manrope",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
 
     /* —— 自動等比縮放到 1366×1024 —— */
-    .outer {
-      width: 100vw; height: 100vh; overflow: hidden;
-      display: grid; place-items: center;
-      background: #000;
-    }
-    .fit {  }
-  max-width:100%;
-  max-height:100%;
+    .outer{
+  width:100vw; height:100vh; overflow:hidden;
+  display:grid; place-items:center; background:#000;
 }
-
-    /* 用 CSS calc 自動算縮放比例： */
-      .fit{
-  width:1366px;
+    .fit {  
+        width:1366px;
   height:1024px;
-   /* ← 改這行 */
-
-}
   max-width:100%;
   max-height:100%;
 }
+
 
 
     /* 固定舞台 1366×1024（所有版面都塞進這個畫布） */
@@ -55,12 +46,12 @@
     }
     video { transform: scaleX(-1); } /* 鏡像預覽 */
 
-    /* 左側角色固定位置（可依需求調整數字） */
-    .char {
-      position:absolute; left:68px; bottom:24px; width:520px;
-      pointer-events:none; image-rendering:auto;
-      filter: drop-shadow(0 8px 24px rgba(0,0,0,.25));
-    }
+  .char{
+  position:absolute; left:68px; bottom:24px;
+  width:720px; /* 520 → 720（可改 640/680/760 視覺調整） */
+  pointer-events:none; image-rendering:auto;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,.25));
+}
 
     /* 引導、倒數、閃光 */
     .badge{
@@ -121,7 +112,7 @@
 .compact h1{ font-size:36px; }
 .compact .subtitle{ font-size:26px; }
 
-
+.badge, .tip{ display:none !important; }
 </style>
 <script>
   // 讓極端情境下也穩：用 visualViewport 設定 --vh
@@ -214,8 +205,9 @@
       ctx.restore();
 
       // 再畫角色（舞台 1366×1024；char CSS: left:68, bottom:24, width:520）
-      const stageW=1366, stageH=1024;
-      const left=68, bottom=24, cssW=520;
+     // 舞台 1366×1024；char CSS: left:68, bottom:24, width:720
+const stageW = 1366, stageH = 1024;
+const left = 68, bottom = 24, cssW = 720; // ← 520 → 720
       const scaleX = vw / stageW, scaleY = vh / stageH;
 
       const dw = cssW * scaleX;

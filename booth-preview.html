@@ -24,13 +24,15 @@
     *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 
     /* 等比縮放舞台到 1366×1024 */
-    .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;background:#fff;}
-      .fit{
+    /* 等比縮放舞台到 1366×1024 */
+.outer{
+  width:100vw;height:100vh;overflow:auto;
+  display:flex;justify-content:center;align-items:center;background:#fff;
+}
+
+.fit{
   width:1366px;
   height:1024px;
-   /* ← 改這行 */
-
-}
   max-width:100%;
   max-height:100%;
 }
@@ -67,6 +69,10 @@
     .frame{
       width:760px;height:820px;display:grid;place-items:center;
     }
+    .right .frame{
+  transform: scale(.85);          /* 0.85=縮小到 85% */
+  transform-origin: center center;
+}
     .frame img{
       display:block;width:100%;height:auto;object-fit:contain;border-radius:6px;
     }
