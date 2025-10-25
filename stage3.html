@@ -47,7 +47,7 @@
 
     /* 左：手語動態圖 */
     .visual{
-      width:300px;height:300px;margin:0 auto;border-radius:999px;
+      width:480px;height:640px;margin:0 auto;border-radius:999px;
       border:2px solid #bdbdbd;display:flex;align-items:center;justify-content:center;
       color:#4b4f53;font-weight:800;
     }
@@ -58,11 +58,19 @@
     .title{font-weight:900;font-size:88px;margin:10px 0 28px;}
     .title small{display:block;font:800 18px "Manrope",sans-serif;color:var(--muted);letter-spacing:.4px;margin-bottom:6px;}
 
-    .card{
-      display:inline-flex;flex-direction:column;gap:18px;align-items:center;justify-content:center;
-      background:var(--pill);padding:26px 30px;border-radius:26px;
-      box-shadow:0 10px 0 rgba(0,0,0,.1),0 16px 36px rgba(0,0,0,.08);min-width:520px;
-    }
+   /* 原本的 .card 可以改成這樣 */
+.card{
+  display:inline-flex;
+  flex-direction:column;
+  gap:14px;               /* 18px → 14px */
+  align-items:center;
+  justify-content:center;
+  background:var(--pill);
+  padding:18px 22px;      /* 26px 30px → 18px 22px */
+  border-radius:20px;     /* 26px → 20px（可選） */
+  box-shadow:0 10px 0 rgba(0,0,0,.1),0 16px 36px rgba(0,0,0,.08);
+  min-width:380px;        /* 520px → 380px（或 420px 視覺上也OK） */
+}
     .card p{margin:0 0 6px;font-weight:900;}
     .btns{display:flex;gap:18px;}
     .btn{
