@@ -110,6 +110,31 @@
 
 
 </style>
+
+<style>
+  /* —— 調整版型：右欄固定欄寬，圖縮小 —— */
+  .wrap{
+    /* 原本是 grid-template-columns: 520px 1fr; */
+    grid-template-columns: 520px 520px; /* 右欄收窄，整體更像你的版型 */
+  }
+
+  .right{ display:grid; place-items:center; }
+  .frame{
+    /* 直接用較小的固定尺寸，而不是 transform 縮放 */
+    width: 420px;
+    height: 640px;
+    display:grid; place-items:center;
+  }
+  .right .frame{
+    transform: none !important;     /* 移除之前的 scale(.85) */
+    transform-origin: center center; /* 保留原點，未來要微調也方便 */
+  }
+
+  .frame img{
+    width: 100%; height: auto; object-fit: contain; border-radius: 6px;
+  }
+</style>
+
 <script>
   // 讓極端情境下也穩：用 visualViewport 設定 --vh
   (function(){
