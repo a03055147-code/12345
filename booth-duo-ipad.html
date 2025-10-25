@@ -47,9 +47,12 @@
     video { transform: scaleX(-1); } /* 鏡像預覽 */
 
   .char{
-  position:absolute; left: -40px; bottom: -20px;
-  width: 1080px; /* 520 → 720（可改 640/680/760 視覺調整） */
-  pointer-events:none; image-rendering:auto;
+  position:absolute; 
+  left:0; 
+  bottom:0;
+  width:50%;          /* ← 改成左半邊 */
+  pointer-events:none; 
+  image-rendering:auto;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,.25));
 }
 
@@ -206,20 +209,23 @@
 
       // 再畫角色（舞台 1366×1024；char CSS: left:68, bottom:24, width:520）
      // 舞台 1366×1024；char CSS: left:68, bottom:24, width:720
+// 舞台 1366×1024；角色放左半邊
 const stageW = 1366, stageH = 1024;
-const left = -40, bottom = -20, cssW = 1080; // ← 520 → 720
-      const scaleX = vw / stageW, scaleY = vh / stageH;
+const left = 0;                  // ← 改成貼齊左側
+const bottom = 0;                // ← 改成貼齊下緣
+const cssW = stageW * 0.5;       // ← 寬度 = 舞台一半（左半邊）
 
-      const dw = cssW * scaleX;
-      const dh = charImg.naturalHeight * (dw / charImg.naturalWidth);
-      const dx = left * scaleX;
-      const dy = (vh - (bottom*scaleY) - dh);
+const scaleX = vw / stageW, scaleY = vh / stageH;
 
-      // 因相機已鏡像，此處也鏡像畫角色，才能固定在「畫面左側」
-      ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
-      ctx.drawImage(charImg, dx, dy, dw, dh);
-      ctx.restore();
+const dw = cssW * scaleX;
+const dh = charImg.naturalHeight * (dw / charImg.naturalWidth);
+const dx = left * scaleX;
+const dy = (vh - (bottom*scaleY) - dh);
 
+// 因相機已鏡像，這裡維持鏡像畫角色，才能固定在「畫面左側」
+ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
+ctx.drawImage(charImg, dx, dy, dw, dh);
+ctx.restore();
       flash.classList.add('show');
       setTimeout(()=>flash.classList.remove('show'), 120);
 
