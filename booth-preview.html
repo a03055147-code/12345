@@ -17,11 +17,15 @@
     figure{margin:0;}
 
     /* 舞台：固定 1366×1024，置中顯示且不捲動 */
-    .outer{
-      width:100vw;height:100vh;overflow:hidden;
-      display:grid;place-items:center;
-      background:#fff;
-    }
+    /* 取代原本的 height:100vh / 100dvh */
+.outer{
+  width:100vw;
+  height: calc(var(--vh, 1vh) * 100);  /* ← 這行最重要 */
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  background:#fff;
+}
     @supports(height:100dvh){ .outer{height:100dvh;} }
     .stage{width:1366px;height:1024px;position:relative;}
     .fit{width:1366px;height:1024px;max-width:100%;max-height:100%;}
@@ -32,7 +36,7 @@
       display:grid;align-items:center;
       grid-template-columns:520px 440px; /* 右欄固定更窄 */
       column-gap:56px;
-      padding:20px;
+      padding:72px;
     }
 
     .left h2{font-weight:900;font-size:34px;margin:0 0 10px;}
@@ -52,6 +56,13 @@
     .right{display:grid;place-items:center;}
     .frame{width:340px;height:520px;display:grid;place-items:center;}
     .frame img{display:block;width:100%;height:auto;object-fit:contain;border-radius:6px;}
+    /* 預設往上推 2vh（你可改成 1vh~4vh 微調） */
+.stage{ transform: translateY(-2vh); }
+
+/* 小螢幕時再多推一點點 */
+@media (max-height: 740px){
+  .stage{ transform: translateY(-3vh); }
+}
   </style>
 
   <script>
