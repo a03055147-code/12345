@@ -10,27 +10,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
-    /* 基本 */
+    /* Reset & base */
     *{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
     html,body{height:100%;margin:0;background:#fff;color:#3b3f44;font-family:"Manrope","Noto Sans TC",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
     body{overscroll-behavior:none;touch-action:manipulation;}
-    figure{margin:0;}
+    figure{margin:0}
 
-    /* 舞台：固定 1366×1024，置中顯示且不捲動 */
-    .outer{
-      width:100vw;height:100vh;overflow:hidden;
-      display:grid;place-items:center;
-      background:#fff;
-    }
+    /* Stage 1366×1024 centered */
+    .outer{width:100vw;height:100vh;display:grid;place-items:center;background:#fff;overflow:hidden;}
     @supports(height:100dvh){ .outer{height:100dvh;} }
     .stage{width:1366px;height:1024px;position:relative;}
     .fit{width:1366px;height:1024px;max-width:100%;max-height:100%;}
 
-    /* 版面：左文右圖 */
+    /* Layout: left text, right mock */
     .wrap{
       position:absolute;inset:0;
       display:grid;align-items:center;
-      grid-template-columns:520px 440px; /* 右欄固定更窄 */
+      grid-template-columns:520px 440px;
       column-gap:56px;
       padding:72px;
     }
@@ -48,14 +44,19 @@
     .cta:hover{background:#a8e6ff;transform:translateY(-1px);}
     .cta:active{transform:translateY(1px);}
 
-    /* 右側模板框 */
+    /* Right: use the provided composite image to match exactly */
     .right{display:grid;place-items:center;}
-    .frame{width:340px;height:520px;display:grid;place-items:center;}
-    .frame img{display:block;width:100%;height:auto;object-fit:contain;border-radius:6px;}
+    .frame{width:360px;height:640px;display:grid;place-items:center;}
+    .frame img{display:block;width:100%;height:auto;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.08);}
+    
+    /* Optional page edge padding guard on very small screens */
+    @media (max-width: 1024px){
+      .wrap{padding:40px;grid-template-columns:1fr;row-gap:28px;justify-items:center;text-align:center;}
+    }
   </style>
 
   <script>
-    // iOS Safari 的 100vh 修正（避免 1~2px 晃動而出現捲動）
+    // iOS Safari 100vh fix
     (function(){
       function setVH(){
         var h = (window.visualViewport? visualViewport.height : window.innerHeight);
@@ -79,6 +80,7 @@
         </div>
         <div class="right">
           <figure class="frame">
+            <!-- Use the exact composite mock image you provided -->
             <img src="心理測驗模板.jpg" alt="自信女拍貼模板預覽">
           </figure>
         </div>
@@ -87,8 +89,10 @@
   </div>
 
   <script>
-    // 預設模板資訊（如需）
-    localStorage.setItem('photobooth_template', JSON.stringify({ role:'自信女', image:'心理測驗模板.jpg' }));
+    // Save basic info if later pages want to read it
+    try{
+      localStorage.setItem('photobooth_template', JSON.stringify({ role:'自信女', image:'心理測驗模板.jpg' }));
+    }catch(e){}
   </script>
 </body>
 </html>

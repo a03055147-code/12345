@@ -48,8 +48,8 @@
 
   .char{
   position:absolute; 
-  left:0; 
-  bottom:0;
+  left:-500; 
+  bottom:-500;
   width:50%;          /* ← 改成左半邊 */
   pointer-events:none; 
   image-rendering:auto;
@@ -207,12 +207,9 @@
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       ctx.restore();
 
-      // 再畫角色（舞台 1366×1024；char CSS: left:68, bottom:24, width:520）
-     // 舞台 1366×1024；char CSS: left:68, bottom:24, width:720
-// 舞台 1366×1024；角色放左半邊
 const stageW = 1366, stageH = 1024;
-const left = 0;                  // ← 改成貼齊左側
-const bottom = 0;                // ← 改成貼齊下緣
+const left = -500;                  // ← 改成貼齊左側
+const bottom = -500;                // ← 改成貼齊下緣
 const cssW = stageW * 0.5;       // ← 寬度 = 舞台一半（左半邊）
 
 const scaleX = vw / stageW, scaleY = vh / stageH;
