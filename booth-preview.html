@@ -2,96 +2,68 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>拍貼｜模板預覽（自信女，無滾動精簡版）</title>
+  <title>拍貼｜模板預覽（修正版）</title>
 
-  <!-- iOS 全螢幕 / 加到主畫面 -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="What's in Your Hand?">
-  <link rel="apple-touch-icon" href="icon.png">
-
-  <!-- PWA manifest -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- iPad 最佳化 viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
-    /* —— 全站沉浸設定 —— */
-    html,body{height:100%;margin:0;overscroll-behavior:none;touch-action:manipulation;background:#fff;}
-    *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+    /* 基本 */
+    *{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+    html,body{height:100%;margin:0;background:#fff;color:#3b3f44;font-family:"Manrope","Noto Sans TC",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
+    body{overscroll-behavior:none;touch-action:manipulation;}
+    figure{margin:0;}
 
-    :root{--bg:#ffffff;--text:#3b3f44;--muted:#6b7076;--pill:#bfefff;--pill-hover:#a8e6ff;}
-
-    body{font-family:"Manrope","Noto Sans TC",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);}
-
-    /* —— 等比舞台 —— */
+    /* 舞台：固定 1366×1024，置中顯示且不捲動 */
     .outer{
       width:100vw;height:100vh;overflow:hidden;
-      display:grid;place-items:center;background:#fff;
+      display:grid;place-items:center;
+      background:#fff;
     }
-    @supports (height: 100dvh){
-      .outer{height:100dvh;}
-    }
-    .outer.use-vh-var{ height: calc(var(--vh, 1vh) * 100); }
-
+    @supports(height:100dvh){ .outer{height:100dvh;} }
     .stage{width:1366px;height:1024px;position:relative;}
     .fit{width:1366px;height:1024px;max-width:100%;max-height:100%;}
 
-    /* —— 版面：左文右圖 —— */
+    /* 版面：左文右圖 */
     .wrap{
       position:absolute;inset:0;
-      display:grid;
-      grid-template-columns:520px 480px; /* 右欄更窄，避免滾動 */
-      justify-content:space-between;
-      align-items:center;
-      padding-left:72px;
-      padding-right:72px;
-      box-sizing:border-box;
+      display:grid;align-items:center;
+      grid-template-columns:520px 440px; /* 右欄固定更窄 */
+      column-gap:56px;
+      padding:72px;
     }
 
     .left h2{font-weight:900;font-size:34px;margin:0 0 10px;}
     .left p{font-weight:900;font-size:28px;margin:0;}
     .left p + p{margin-top:8px;}
-
     .cta{
       margin-top:28px;display:inline-block;padding:14px 28px;
-      border-radius:16px;background:var(--pill);color:#1f2a33;text-decoration:none;
+      border-radius:16px;background:#bfefff;color:#1f2a33;text-decoration:none;
       font-weight:900;font-size:24px;
       box-shadow:0 6px 0 rgba(0,0,0,.12),0 12px 32px rgba(0,0,0,.06);
       transition:transform .08s ease, background .15s ease, box-shadow .15s ease;
-      z-index:10; pointer-events:auto; cursor:pointer;
     }
-    .cta:hover{background:var(--pill-hover);transform:translateY(-1px);box-shadow:0 7px 0 rgba(0,0,0,.12),0 14px 36px rgba(0,0,0,.08);}
-    .cta:active{transform:translateY(1px);box-shadow:0 4px 0 rgba(0,0,0,.12),0 8px 20px rgba(0,0,0,.06);}
+    .cta:hover{background:#a8e6ff;transform:translateY(-1px);}
+    .cta:active{transform:translateY(1px);}
 
-    /* —— 右側拍貼模板：更小、更置中 —— */
+    /* 右側模板框 */
     .right{display:grid;place-items:center;}
-    .frame{width:360px;height:560px;display:grid;place-items:center;}
+    .frame{width:340px;height:520px;display:grid;place-items:center;}
     .frame img{display:block;width:100%;height:auto;object-fit:contain;border-radius:6px;}
-
-    /* —— Compact 縮小版（極端縮放時）—— */
-    .compact .left h2{ font-size:30px; }
-    .compact .left p{ font-size:24px; }
-    .compact .cta{ font-size:22px; padding:12px 24px; }
   </style>
 
   <script>
-    // 讓極端情境下也穩：用 visualViewport 設定 --vh
+    // iOS Safari 的 100vh 修正（避免 1~2px 晃動而出現捲動）
     (function(){
       function setVH(){
-        var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-        document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+        var h = (window.visualViewport? visualViewport.height : window.innerHeight);
+        document.documentElement.style.setProperty('--vh', (h*0.01) + 'px');
       }
       setVH();
-      window.addEventListener('resize', setVH);
-      window.addEventListener('orientationchange', setVH);
-      // 給 .outer 一個 class 以啟用備援
-      addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.outer').forEach(n => n.classList.add('use-vh-var'));
-      });
+      addEventListener('resize', setVH, {passive:true});
+      addEventListener('orientationchange', setVH, {passive:true});
     })();
   </script>
 </head>
@@ -115,29 +87,8 @@
   </div>
 
   <script>
-    // 預設拍貼模板資料（自信女）
-    localStorage.setItem('photobooth_template', JSON.stringify({
-      role: '自信女',
-      image: '心理測驗模板.jpg'
-    }));
-  </script>
-
-  <script>
-  (function(){
-    var BASE_W = 1366;
-    var BASE_H = 1024;
-    function checkCompact(){
-      var vv = window.visualViewport;
-      var vw = vv ? vv.width : window.innerWidth;
-      var vh = vv ? vv.height : window.innerHeight;
-      var scale = Math.min(vw/BASE_W, vh/BASE_H);
-      document.documentElement.classList.toggle('compact', scale < 0.9);
-    }
-    checkCompact();
-    if (window.visualViewport) visualViewport.addEventListener('resize', checkCompact, {passive:true});
-    window.addEventListener('resize', checkCompact, {passive:true});
-    window.addEventListener('orientationchange', checkCompact);
-  })();
+    // 預設模板資訊（如需）
+    localStorage.setItem('photobooth_template', JSON.stringify({ role:'自信女', image:'心理測驗模板.jpg' }));
   </script>
 </body>
 </html>
