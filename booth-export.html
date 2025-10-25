@@ -3,99 +3,59 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>拍貼輸出｜合照模板輸出</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<title>Export</title>
 <style>
-  html,body{margin:0;background:#fff;font-family:"Noto Sans TC","Manrope",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;}
-  .page{min-height:100vh;display:grid;grid-template-columns:1fr 560px;gap:24px;align-items:center;justify-items:center;padding:40px;}
-  .right{width:520px}
-  h1{font-size:32px;margin:0 0 24px;color:#333;font-weight:900}
-  .btn{display:inline-block;padding:14px 22px;border-radius:14px;background:#b8ecff;color:#134051;
-       font-weight:900;font-size:20px;text-decoration:none;border:none;cursor:pointer;margin:6px 0}
-  .btn:active{transform:translateY(1px)}
-  .stack{display:flex;flex-direction:column;gap:12px}
-  .preview-wrap{width:520px;aspect-ratio:3/4;display:grid;place-items:center;background:#f3f3f3;border-radius:16px}
-  canvas{max-width:100%;height:auto;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
-  .hint{color:#666;font-size:14px;margin-top:8px}
-  @media (max-width:980px){ .page{grid-template-columns:1fr;gap:28px} .right{width:90vw} .preview-wrap{width:90vw} }
-  /* 列印：只印出合成圖 */
+  html,body{margin:0;background:#fff;height:100%}
+  body{display:grid;place-items:center}
+  canvas{width:min(90vw,900px);height:auto;display:block}
   @media print{
-    body{padding:0;margin:0;background:#fff}
-    .page{display:block;padding:0}
-    .right, h1, .stack, .hint{display:none !important}
-    .preview-wrap{width:100vw;aspect-ratio:auto;background:#fff}
-    canvas{width:100vw;max-width:100vw;border-radius:0;box-shadow:none}
+    html,body{background:#fff}
+    canvas{width:100vw;max-width:100vw;height:auto}
   }
 </style>
 </head>
 <body>
-  <div class="page">
-    <div class="right">
-      <h1>好讚喔！我們有合照了</h1>
-      <div class="stack">
-        <button class="btn" id="retake">重新拍一次</button>
-        <button class="btn" id="print">列印</button>
-        <button class="btn" id="download">下載 PNG</button>
-        <div class="hint">若照片在框內位置需微調，可在原始碼最上方的「版面參數」調整。</div>
-      </div>
-    </div>
-
-    <div class="preview-wrap">
-      <canvas id="out"></canvas>
-    </div>
-  </div>
-
+  <canvas id="out"></canvas>
 <script>
-/* ===================== 版面參數（可微調） =====================
+// ======= Config =======
+const TEMPLATE_SRC = '心理測驗套版.png';
+const MARGIN_X = 0.08;        // 左右內縮比例
+const MARGIN_Y_TOP = 0.08;     // 上內縮比例
+const MARGIN_Y_BOTTOM = 0.08;  // 下內縮比例
+const MID_BAR = 0.08;          // 中間橫條厚度比例
+const SLOT_RADIUS_PX = 24;     // 視窗圓角
 
-   此頁會把兩張相片「覆蓋填滿」(object-fit: cover) 到模板的兩個視窗。
-   視窗位置以「模板圖片尺寸」為基準（百分比），因此換更高解析度模板也適用。
-*/
-const TEMPLATE_SRC = '心理測驗套版.png'; // 你的黃框模板
-// 內框邊界（左右/上/下）百分比。例：0.08 代表左右各留 8% 的外框。
-const MARGIN_X = 0.08;
-const MARGIN_Y_TOP = 0.08;
-const MARGIN_Y_BOTTOM = 0.08;
-// 中間橫條厚度百分比（相對整張模板高度）
-const MID_BAR = 0.08;
-// 兩張視窗的「圓角」半徑（像素，會依模板實際像素自動縮放用比例）
-const SLOT_RADIUS_PX = 24;
-
-/* ============================================================ */
-
-const shots = (() => {
-  try{
-    const json = localStorage.getItem('photobooth_shots');
-    return json ? JSON.parse(json) : null;
-  }catch(e){ return null; }
-})();
+// ======= Load shots from localStorage =======
+let shots = null;
+try{
+  const json = localStorage.getItem('photobooth_shots');
+  shots = json ? JSON.parse(json) : null;
+}catch(e){}
 
 if(!shots || !shots.one || !shots.two){
-  alert('找不到拍攝照片，將返回拍攝頁。');
-  location.href = 'booth-duo-ipad.html';
+  // 若沒有照片就直接返回拍攝頁
+  location.replace('booth-duo-ipad.html');
 }
 
-const tplImg = new Image();
-tplImg.src = TEMPLATE_SRC;
-
-const img1 = new Image(); img1.src = shots?.one || '';
-const img2 = new Image(); img2.src = shots?.two || '';
+const tpl = new Image(); tpl.src = TEMPLATE_SRC;
+const topImg = new Image(); topImg.src = shots.one;
+const bottomImg = new Image(); bottomImg.src = shots.two;
 
 Promise.all([
-  new Promise(r=>tplImg.onload=r),
-  new Promise(r=>img1.onload=r),
-  new Promise(r=>img2.onload=r),
-]).then(() => {
-  const canvas = document.getElementById('out');
-  const ctx = canvas.getContext('2d');
+  new Promise(r=>tpl.onload=r),
+  new Promise(r=>topImg.onload=r),
+  new Promise(r=>bottomImg.onload=r),
+]).then(()=>{
+  const c = document.getElementById('out');
+  const ctx = c.getContext('2d');
 
-  // 以模板原始解析度輸出
-  const W = tplImg.naturalWidth;
-  const H = tplImg.naturalHeight;
-  canvas.width = W;
-  canvas.height = H;
+  const W = tpl.naturalWidth, H = tpl.naturalHeight;
+  c.width = W; c.height = H;
 
-  // 計算兩個視窗矩形
+  // 背景白
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0,0,W,H);
+
   const innerX = W * MARGIN_X;
   const innerW = W * (1 - MARGIN_X*2);
   const innerYTop = H * MARGIN_Y_TOP;
@@ -106,21 +66,6 @@ Promise.all([
   const slot1 = { x: innerX, y: innerYTop, w: innerW, h: slotH };
   const slot2 = { x: innerX, y: innerYTop + slotH + barH, w: innerW, h: slotH };
 
-  // 照片以 cover 方式填滿 slot
-  function drawCover(img, r){
-    const imgW = img.naturalWidth, imgH = img.naturalHeight;
-    const scale = Math.max(r.w/imgW, r.h/imgH);
-    const dw = imgW * scale, dh = imgH * scale;
-    const dx = r.x + (r.w - dw)/2;
-    const dy = r.y + (r.h - dh)/2;
-    ctx.drawImage(img, dx, dy, dw, dh);
-  }
-
-  // 先畫白底避免透明
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0,0,W,H);
-
-  // 先把照片「裁在」兩個圓角窗內
   function roundRectPath(r, radius){
     const rr = Math.max(0, radius);
     ctx.beginPath();
@@ -136,44 +81,26 @@ Promise.all([
     ctx.closePath();
   }
 
-  const radius = SLOT_RADIUS_PX * (Math.min(W,H)/1200); // 隨模板等比
-  // 上視窗
-  ctx.save();
-  roundRectPath(slot1, radius);
-  ctx.clip();
-  drawCover(img1, slot1);
-  ctx.restore();
+  function drawCover(img, r){
+    const imgW = img.naturalWidth || 1, imgH = img.naturalHeight || 1;
+    const s = Math.max(r.w/imgW, r.h/imgH);
+    const dw = imgW*s, dh = imgH*s;
+    const dx = r.x + (r.w - dw)/2;
+    const dy = r.y + (r.h - dh)/2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
 
-  // 下視窗
-  ctx.save();
-  roundRectPath(slot2, radius);
-  ctx.clip();
-  drawCover(img2, slot2);
-  ctx.restore();
+  const radius = SLOT_RADIUS_PX * (Math.min(W,H)/1200);
 
-  // 疊上模板（黃框等）
-  ctx.drawImage(tplImg, 0, 0, W, H);
+  // 上窗
+  ctx.save(); roundRectPath(slot1, radius); ctx.clip(); drawCover(topImg, slot1); ctx.restore();
+  // 下窗
+  ctx.save(); roundRectPath(slot2, radius); ctx.clip(); drawCover(bottomImg, slot2); ctx.restore();
 
-}).catch(err=>{
-  console.error(err);
-  alert('載入圖片失敗，請返回重拍。');
-  location.href = 'booth-duo-ipad.html';
-});
-
-// UI
-document.getElementById('retake').addEventListener('click', ()=>{
-  // 想保留上一輪也行；若要清掉請解除註解下一行
-  // localStorage.removeItem('photobooth_shots');
-  location.href = 'booth-duo-ipad.html';
-});
-document.getElementById('print').addEventListener('click', ()=>{ window.print(); });
-
-document.getElementById('download').addEventListener('click', ()=>{
-  const c = document.getElementById('out');
-  const a = document.createElement('a');
-  a.href = c.toDataURL('image/png');
-  a.download = 'photobooth.png';
-  a.click();
+  // 疊上模板
+  ctx.drawImage(tpl, 0, 0, W, H);
+}).catch(()=>{
+  location.replace('booth-duo-ipad.html');
 });
 </script>
 </body>
