@@ -4,59 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 
-
-  <!-- 全螢幕 & 主畫面圖示（iOS） -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="What's in Your Hand?" />
   <link rel="apple-touch-icon" href="icon.png" />
-
-  <!-- Android / 其他平台 -->
   <link rel="manifest" href="manifest.json" />
 
   <title>拍貼｜iPad 版本（合照模式）</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
-    /* —— 全站沉浸式設定（防選取、防長按、防彈性捲動） —— */
     html, body { overscroll-behavior:none; touch-action:manipulation; background:#000; }
     * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-    body { overscroll-behavior: none; touch-action:manipulation; font-family:"Noto Sans TC","Manrope",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+    body { font-family:"Noto Sans TC","Manrope",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
 
-    /* —— 自動等比縮放到 1366×1024 —— */
-    .outer{
-  width:100vw; height:100vh; overflow:hidden;
-  display:grid; place-items:center; background:#000;
-}
-    .fit {  
-        width:1366px;
-  height:1024px;
-  max-width:100%;
-  max-height:100%;
-}
+    .outer{ width:100vw; height:100vh; overflow:hidden; display:grid; place-items:center; background:#000; }
+    .fit{ width:1366px; height:1024px; max-width:100%; max-height:100%; }
 
+    .stage{ width:1366px; height:1024px; position:relative; overflow:hidden; background:#000; }
 
-
-    /* 固定舞台 1366×1024（所有版面都塞進這個畫布） */
-    .stage { width:1366px; height:1024px; position:relative; overflow:hidden; background:#000; }
-
-    /* 相機預覽鋪滿舞台（鏡像顯示） */
-    video, canvas {
+    video, canvas{
       position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     }
-    video { transform: scaleX(-1); } /* 鏡像預覽 */
+    video{ transform: scaleX(-1); } /* 鏡像預覽 */
 
-  .char{
-  position:absolute; 
-  left:-500; 
-  bottom:-500;
-  width:50%;          /* ← 改成左半邊 */
-  pointer-events:none; 
-  image-rendering:auto;
-  filter: drop-shadow(0 8px 24px rgba(0,0,0,.25));
-}
+    /* ✅ 角色固定在「左半邊」 */
+    .char{
+      position:absolute;
+      left:0; top:0;
+      width:50%; height:100%;
+      object-fit:contain;        /* 依比例塞入左半邊，不會被裁掉 */
+      pointer-events:none;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,.25));
+    }
 
-    /* 引導、倒數、閃光 */
     .badge{
       position:absolute; left:68px; top:60px;
       background:rgba(255,255,255,.85); color:#000;
@@ -72,67 +53,43 @@
       font-weight:900; font-size:140px; color:#fff; text-shadow:0 10px 40px rgba(0,0,0,.45);
       opacity:0; transition:opacity .2s ease;
     }
-    .flash{
-      position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .12s ease;
-    }
+    .flash{ position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .12s ease; }
     .show{opacity:1}
 
-    /* 啟動按鈕（只在第一次開鏡頭時顯示；iOS 需要使用者點擊觸發） */
     .startBtn{
       position:absolute; inset:0; margin:auto;
       width:420px; height:120px; border:0; border-radius:16px;
       background:rgba(255,255,255,.92); color:#000; font-weight:900; font-size:28px;
     }
-  
-/* —— Compact 縮小版（當縮放比 < 0.9 時）—— */
-.compact .text-block{ font-size:24px; line-height:1.7; }
-.compact .cta{ font-size:24px; padding:14px 28px; bottom:60px; right:60px; }
-.compact .q{ font-size:30px; }
-.compact .opt{ font-size:22px; padding:18px 24px; }
-.compact .label{ font-size:28px; }
-.compact .pill{ padding:14px 24px; }
-.compact h1{ font-size:36px; }
-.compact .subtitle{ font-size:26px; }
 
+    /* iPad 介面裁切用（現階段不顯示引導字） */
+    .badge, .tip{ display:none !important; }
+  </style>
 
-</style>
   <style>
-  /* iPad / iOS Safari：避免 100vh 位移 */
-  .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;} /* 先給舊機 fallback */
-  @supports (height: 100dvh) {
-    .outer{width:100vw;height:100vh;overflow:auto;display:flex;justify-content:center;align-items:center;} /* 新版 iOS / iPadOS 用 dvh */
-  }
-  /* 再準備一個 --vh 變數備援（超舊版 iOS 也穩）*/
-  .outer.use-vh-var{ height: calc(var(--vh, 1vh) * 100); }
-
-/* —— Compact 縮小版（當縮放比 < 0.9 時）—— */
-.compact .text-block{ font-size:24px; line-height:1.7; }
-.compact .cta{ font-size:24px; padding:14px 28px; bottom:60px; right:60px; }
-.compact .q{ font-size:30px; }
-.compact .opt{ font-size:22px; padding:18px 24px; }
-.compact .label{ font-size:28px; }
-.compact .pill{ padding:14px 24px; }
-.compact h1{ font-size:36px; }
-.compact .subtitle{ font-size:26px; }
-
-.badge, .tip{ display:none !important; }
-</style>
-<script>
-  // 讓極端情境下也穩：用 visualViewport 設定 --vh
-  (function(){
-    function setVH(){
-      var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
-      document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+    /* iOS 高度安全處理（兼容舊機） */
+    .outer{ width:100vw; height:100vh; overflow:auto; display:flex; justify-content:center; align-items:center; }
+    @supports (height: 100dvh) {
+      .outer{ width:100vw; height:100vh; }
     }
-    setVH();
-    window.addEventListener('resize', setVH);
-    window.addEventListener('orientationchange', setVH);
-    // 給 .outer 一個 class 以啟用備援
-    addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.outer').forEach(n => n.classList.add('use-vh-var'));
-    });
-  })();
-</script>
+    .outer.use-vh-var{ height: calc(var(--vh, 1vh) * 100); }
+  </style>
+
+  <script>
+    /* 設定 --vh 變數，避免 iOS 工具列影響 100vh */
+    (function(){
+      function setVH(){
+        var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+        document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+      }
+      setVH();
+      window.addEventListener('resize', setVH);
+      window.addEventListener('orientationchange', setVH);
+      addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.outer').forEach(n => n.classList.add('use-vh-var'));
+      });
+    })();
+  </script>
 </head>
 <body>
   <div class="outer">
@@ -140,7 +97,7 @@
       <video id="video" playsinline autoplay muted></video>
       <canvas id="canvas" width="1920" height="1080" style="display:none"></canvas>
 
-      <!-- 角色：先動作1，拍完換動作2 -->
+      <!-- 左半邊角色（拍第一張是動作1，第二張換動作2） -->
       <img id="char" class="char" src="動作1.png" alt="角色">
 
       <div class="badge">iPad 全螢幕模式</div>
@@ -153,13 +110,13 @@
   </div>
 
   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
+    const video   = document.getElementById('video');
+    const canvas  = document.getElementById('canvas');
     const charImg = document.getElementById('char');
-    const tip = document.getElementById('tip');
-    const cd = document.getElementById('cd');
-    const flash = document.getElementById('flash');
-    const startBtn = document.getElementById('startBtn');
+    const tip     = document.getElementById('tip');
+    const cd      = document.getElementById('cd');
+    const flash   = document.getElementById('flash');
+    const startBtn= document.getElementById('startBtn');
 
     const poses = [
       { img:'動作1.png', label:'動作 1' },
@@ -169,6 +126,7 @@
     let stream = null;
     const shots = { one:null, two:null };
 
+    /* ✅ 等到 canplay（video 有寬高）才開始拍 */
     async function startCamera(){
       try{
         if(stream) stream.getTracks().forEach(t=>t.stop());
@@ -177,8 +135,18 @@
           audio:false
         });
         video.srcObject = stream;
+
+        // 等 metadata 與 canplay 就緒
+        await new Promise(res => {
+          const done = () => res();
+          if (video.readyState >= 2 && video.videoWidth && video.videoHeight) return res();
+          video.onloadedmetadata = () => { /* 先拿寬高 */ };
+          video.oncanplay = done;
+        });
+        await video.play();
       }catch(e){
         alert('無法開啟相機：' + e.message);
+        throw e;
       }
     }
 
@@ -196,33 +164,33 @@
 
     function capture(){
       const vw = video.videoWidth, vh = video.videoHeight;
-      if(!vw || !vh) return null;
+      if(!vw || !vh){ return null; }
 
-      // 用相機原始解析度輸出，鏡像與預覽一致
       canvas.width = vw; canvas.height = vh;
       const ctx = canvas.getContext('2d');
 
-      // 先畫相機畫面（鏡像）
+      /* 先畫相機（鏡像，與預覽一致） */
       ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       ctx.restore();
 
-const stageW = 1366, stageH = 1024;
-const left = -500;                  // ← 改成貼齊左側
-const bottom = -500;                // ← 改成貼齊下緣
-const cssW = stageW * 0.5;       // ← 寬度 = 舞台一半（左半邊）
+      /* ✅ 把角色畫在「左半邊」：以舞台 1366×1024 為座標，轉到相機解析度 */
+      const stageW = 1366, stageH = 1024;
+      const scaleX = vw / stageW, scaleY = vh / stageH;
 
-const scaleX = vw / stageW, scaleY = vh / stageH;
+      const slot = { x:0, y:0, w: stageW*0.5, h: stageH }; // 左半邊
+      // 依「contain」策略把角色塞進左半邊
+      const imgW = charImg.naturalWidth || 1000, imgH = charImg.naturalHeight || 1000;
+      const s = Math.min((slot.w*scaleX)/imgW, (slot.h*scaleY)/imgH);
+      const dw = imgW*s, dh = imgH*s;
+      const dx = (slot.x*scaleX) + ((slot.w*scaleX - dw)/2);
+      const dy = (slot.y*scaleY) + ((slot.h*scaleY - dh)/2);
 
-const dw = cssW * scaleX;
-const dh = charImg.naturalHeight * (dw / charImg.naturalWidth);
-const dx = left * scaleX;
-const dy = (vh - (bottom*scaleY) - dh);
+      // 因為整張相機畫面已鏡像，這裡維持鏡像繪製，位置會對齊預覽的左側
+      ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
+      ctx.drawImage(charImg, dx, dy, dw, dh);
+      ctx.restore();
 
-// 因相機已鏡像，這裡維持鏡像畫角色，才能固定在「畫面左側」
-ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
-ctx.drawImage(charImg, dx, dy, dw, dh);
-ctx.restore();
       flash.classList.add('show');
       setTimeout(()=>flash.classList.remove('show'), 120);
 
@@ -230,55 +198,58 @@ ctx.restore();
     }
 
     async function shootSequence(){
-      startBtn.style.display = 'none';
-
       // 第一張
       tip.innerHTML = '請和角色一起擺出 <strong>動作 1</strong>';
       await countdown();
       shots.one = capture();
 
-      // 換角色 → 第二張
+      // 第二張
       charImg.src = poses[1].img;
-      await sleep(350);
+      await new Promise(r => charImg.onload = r); // 確保換圖已載入
       tip.innerHTML = '請和角色一起擺出 <strong>動作 2</strong>';
       await countdown();
       shots.two = capture();
 
-      // 存起來 → 前往輸出頁
+      // 存起來 → 輸出頁
       localStorage.setItem('photobooth_shots', JSON.stringify(shots));
       window.location.href = 'booth-export.html';
     }
 
-    // iOS 需要由使用者觸發才能啟動相機
+    /* iOS 需使用者手動點擊觸發鏡頭 */
     startBtn.addEventListener('click', async ()=>{
-      await startCamera();
-      await sleep(300);
-      shootSequence();
+      startBtn.disabled = true;
+      try{
+        await startCamera();          // ✅ 相機 ready、video 有寬高
+        await sleep(250);             // 給預覽 1~2 幀時間
+        startBtn.style.display = 'none';
+        await shootSequence();        // 才開始倒數與截圖
+      }catch(_) {
+        startBtn.disabled = false;
+      }
     });
 
-    // App 退到背景就關掉相機，回來再重開
+    /* 背景/前景切換時關閉相機，避免佔用 */
     document.addEventListener('visibilitychange', ()=>{
       if(document.hidden && stream){ stream.getTracks().forEach(t=>t.stop()); }
     });
   </script>
 
-<script>
-(function(){
-  var BASE_W = 1366;
-  var BASE_H = 1024;
-  function checkCompact(){
-    var vv = window.visualViewport;
-    var vw = vv ? vv.width : window.innerWidth;
-    var vh = vv ? vv.height : window.innerHeight;
-    var scale = Math.min(vw/BASE_W, vh/BASE_H);
-    document.documentElement.classList.toggle('compact', scale < 0.9);
-  }
-  checkCompact();
-  if (window.visualViewport) visualViewport.addEventListener('resize', checkCompact, {passive:true});
-  window.addEventListener('resize', checkCompact, {passive:true});
-  window.addEventListener('orientationchange', checkCompact);
-})();
-</script>
-
+  <script>
+    /* Compact 檢測（保留原本結構，未顯示的引導字體積會縮） */
+    (function(){
+      var BASE_W = 1366, BASE_H = 1024;
+      function checkCompact(){
+        var vv = window.visualViewport;
+        var vw = vv ? vv.width : window.innerWidth;
+        var vh = vv ? vv.height : window.innerHeight;
+        var scale = Math.min(vw/BASE_W, vh/BASE_H);
+        document.documentElement.classList.toggle('compact', scale < 0.9);
+      }
+      checkCompact();
+      if (window.visualViewport) visualViewport.addEventListener('resize', checkCompact, {passive:true});
+      window.addEventListener('resize', checkCompact, {passive:true});
+      window.addEventListener('orientationchange', checkCompact);
+    })();
+  </script>
 </body>
 </html>
