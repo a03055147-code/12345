@@ -9,8 +9,8 @@
     html, body { margin:0; background:#fff; color:#1f2a33; }
     body { font-family:"Manrope","Noto Sans TC",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
     :root{ --vh:1vh; --scale:1; }
-    .outer{ width:100vw; height:calc(var(--vh)*100); display:grid; place-items:center; overflow:hidden; }
-    .fit{ width:1366px; height:1024px; transform:scale(var(--scale)); transform-origin:center; }
+    .outer{ position:relative; width:100vw; height:100svh; min-height:100vh; display:block; overflow:hidden; background:#fff; }
+    .fit{ position:absolute; top:50%; left:50%; width:1366px; height:1024px; transform:translate(-50%,-50%) scale(var(--scale)); transform-origin:center; }
     .stage{ width:100%; height:100%; padding:0; display:grid; grid-template-columns: 360px 1fr; gap:48px; align-items:center; justify-items:center; }
     .left{ display:flex; flex-direction:column; gap:18px; align-items:stretch; justify-content:center; }
     .btn{ appearance:none; border:0; border-radius:18px; padding:18px 24px; font-weight:900; font-size:24px; cursor:pointer;
@@ -51,17 +51,20 @@
 
 <script>
 (function(){ // scale & centering with visualViewport (iPad-safe)
-  function viewH(){
-    return (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+  function viewBox(){
+    var vw = (window.visualViewport && window.visualViewport.width) ? window.visualViewport.width : window.innerWidth;
+    var vh = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+    return {vw, vh};
   }
   function setVH(){
-    var vh = viewH();
-    document.documentElement.style.setProperty('--vh', (vh * 0.01) + 'px');
-    var s = Math.min(window.innerWidth / 1366, vh / 1024);
+    var vb = viewBox();
+    document.documentElement.style.setProperty('--vh', (vb.vh * 0.01) + 'px');
+    var s = Math.min(vb.vw / 1366, vb.vh / 1024);
+    if (!isFinite(s) || s <= 0) s = 1;
+    s = Math.min(1, s); // never upscale, only downscale
     document.documentElement.style.setProperty('--scale', s);
   }
   setVH();
-  // Listen to all the things that can change the viewport box on iPad
   addEventListener('resize', setVH, {passive:true});
   addEventListener('orientationchange', setVH, {passive:true});
   if (window.visualViewport) {
