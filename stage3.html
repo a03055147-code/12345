@@ -199,6 +199,8 @@
     document.getElementById('resultTitle').innerHTML =
       `<small>經過這次的旅程，我覺得你的手語名字可以叫</small>${titleWord}`;
 
+    try { sendLog({ stage:'result', type: bestTypeKey, qIndex: 0, optionKey: topLabel || '', optionText: topLabel || '', name: player.name || '', gender: player.gender || '' }); } catch(e) {}
+
     // 清除分數重新開始
     document.getElementById('restart').addEventListener('click', ()=>{
       localStorage.removeItem('handname_scores');
@@ -231,6 +233,36 @@
   window.addEventListener('resize', checkCompact, {passive:true});
   window.addEventListener('orientationchange', checkCompact);
 })();
+</script>
+
+
+<script>
+  // === Logger (Google Apps Script) ===
+  const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbwUh5giz-EKflnCIvEHvwUqgUJoPpXpqo7-263iZj-QqkA78iOpwkCKYaXT2PEI2RJj/exec";
+  function getSessionId(){
+    let id = sessionStorage.getItem('sess_id');
+    if(!id){
+      id = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+      );
+      sessionStorage.setItem('sess_id', id);
+    }
+    return id;
+  }
+  async function sendLog(data){
+    const base = {
+      sessionId: getSessionId(),
+      userAgent: navigator.userAgent,
+      referrer: document.referrer || ''
+    };
+    try{
+      await fetch(LOG_ENDPOINT, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(Object.assign(base, data))
+      });
+    }catch(e){ console.warn('log failed', e); }
+  }
 </script>
 
 </body>
