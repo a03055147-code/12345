@@ -309,11 +309,7 @@
       referrer: document.referrer || ''
     };
     try{
-      await fetch(LOG_ENDPOINT, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(Object.assign(base, data))
-      });
+      await fetch(LOG_ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...base, ...data }) });
     }catch(e){ console.warn('log failed', e); }
   }
 </script>
