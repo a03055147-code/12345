@@ -162,22 +162,40 @@
       barEl.style.width = ((idx)/questions.length*100)+'%';
     }
 
-    function vote(key){
-      if(!scoreKeys.includes(key)) return;
-      const item = questions[idx];
-      const chosen = item.opts.find(o => o.k === key);
-      
-      try{ _pushChoice('s1', {k:key, t: (chosen? chosen.t : '')}); }catch(e){}
-try { sendLog({ stage:'stage1', type:key, qIndex: idx+1, optionKey:key, optionText: chosen ? chosen.t : '' }); } catch(e) {}
-    scores[key] = (scores[key]||0) + 1;
-      idx++;
-      if(idx>=questions.length){
-        localStorage.setItem('handname_scores', JSON.stringify(scores));
-        window.location.href = 'stage2-intro.html';
-      }else{
-        render();
-      }
-    }
+    async function vote(key){
+  if(!scoreKeys.includes(key)) return;
+  const item = questions[idx];
+  const chosen = item.opts.find(o => o.k === key);
+  
+  // 暫存答題資料
+  try{ _pushChoice('s1', {k:key, t: (chosen ? chosen.t : '')}); }catch(e){}
+
+  // ✅ 等待 sendLog 完成再跳頁
+  try {
+    await sendLog({
+      stage:'stage1',
+      type:key,
+      qIndex: idx+1,
+      optionKey:key,
+      optionText: chosen ? chosen.t : ''
+    });
+  } catch(e) {
+    console.error(e);
+  }
+
+  // 計分
+  scores[key] = (scores[key]||0) + 1;
+  idx++;
+
+  if(idx >= questions.length){
+    localStorage.setItem('handname_scores', JSON.stringify(scores));
+    // ✅ 延遲 300ms，確保最後一筆紀錄送出
+    setTimeout(()=>window.location.href = 'stage2-intro.html', 500);
+  } else {
+    render();
+  }
+}
+
   </script>
 
 <script>
