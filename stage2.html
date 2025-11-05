@@ -275,32 +275,33 @@ sessionStorage.setItem('stage2_domain', type);
     }
 
 function vote(key){
-  const item = current.items[idx];
+  const item = items[i];
   const chosen = item.opts.find(o => o.k === key);
 
-  // 累積計分邏輯
-  stage2Scores[type + ':' + key] = (stage2Scores[type + ':' + key] || 0) + 1;
+  // 計分
+  pool[type + ':' + key] = (pool[type + ':' + key] || 0) + 1;
 
-  // ✅ 新增紀錄行為
-  try { 
-    _pushChoice('s2', {k:key, t: chosen ? chosen.t : ''}); 
-  } catch(e){}
+  // ✅ 記錄用於最終 summary
+  try { _pushChoice('s2', {k:key, t: chosen ? chosen.t : ''}); } catch(e){}
+
+  // ✅ 上傳紀錄到試算表
   try {
     sendLog({
       stage:'stage2',
       stage2Domain: type,
-      qIndex: idx+1,
+      qIndex: i+1,
       optionKey: key,
       optionText: chosen ? chosen.t : '',
       type: key
     });
   } catch(e){ console.error(e); }
 
-  idx++;
-  if(idx >= current.items.length){
-    localStorage.setItem('handname_stage2', JSON.stringify(stage2Scores));
+  // 下一題
+  i++;
+  if(i >= items.length){
+    localStorage.setItem(storeKey, JSON.stringify(pool));
     window.location.href = 'stage3.html';
-  }else{
+  } else {
     render();
   }
 }
