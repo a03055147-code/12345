@@ -270,7 +270,7 @@ async function vote(key){
   if(i >= items.length){
     localStorage.setItem(storeKey, JSON.stringify(pool));
     // ✅ 延遲0.3秒確保最後一筆送出
-    setTimeout(()=>window.location.href = 'stage3.html', 2000);
+    setTimeout(()=>window.location.href = 'stage3.html', 500);
   } else {
     render();
   }

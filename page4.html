@@ -190,7 +190,7 @@
   if(idx >= questions.length){
     localStorage.setItem('handname_scores', JSON.stringify(scores));
     // ✅ 延遲 300ms，確保最後一筆紀錄送出
-    setTimeout(()=>window.location.href = 'stage2-intro.html', 2000);
+    setTimeout(()=>window.location.href = 'stage2-intro.html', 500);
   } else {
     render();
   }
