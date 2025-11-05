@@ -180,19 +180,60 @@
     });
 
     // 第二階段細分特質
-    const stage2 = JSON.parse(localStorage.getItem('handname_stage2')||'{}');
-    let topLabel = '' , topScore = -Infinity;
-    Object.entries(stage2).forEach(([k,v])=>{
-      if(k.startsWith(bestTypeKey+':')){
-        const label = k.split(':')[1];
-        if(v>topScore){ topScore=v; topLabel=label; }
-      }
-    });
+   // 第二階段細分特質（加上中文對照）
+// 第二階段細分特質（加上中文對照）
+const stage2 = JSON.parse(localStorage.getItem('handname_stage2')||'{}');
+const stage2KeyMap = {
+  extravert:{playful:'淘氣',humorous:'幽默',lively:'活潑',generous:'大方'},
+  introvert:{calm:'冷靜',gentle:'文靜',steady:'沉穩',shy:'害羞'},
+  caring:{soft:'溫柔',kind:'善良',patient:'耐心',upbeat:'樂觀'},
+  decisive:{brave:'勇敢',confident:'自信',decisive:'果斷',independent:'獨立'},
+  analytic:{sharp:'敏銳',careful:'細心',smart:'聰明',cautious:'謹慎'}
+};
+
+let topLabel = '', topScore = -Infinity;
+const stage2Domain = sessionStorage.getItem('stage2_domain') || bestTypeKey;
+
+Object.entries(stage2).forEach(([k,v])=>{
+  if(k.startsWith(stage2Domain+':')){
+    const labelKey = k.split(':')[1];
+    const map = stage2KeyMap[stage2Domain] || {};
+    const label = map[labelKey] || labelKey; // ✅ 英文→中文
+    if(v > topScore){
+      topScore = v;
+      topLabel = label;
+    }
+  }
+});
+
+
 
     // 生成稱號
-    const genderMap = {male:'男', female:'女'};
-    const gSuffix = genderMap[player.gender] || '';
-    const titleWord = (topLabel || types[bestTypeKey] || '旅人') + gSuffix;
+   // 生成稱號（確保取到中文）
+const genderMap = {male:'男', female:'女'};
+const gSuffix = genderMap[player.gender] || '';
+
+// 如果 topLabel 沒有取到，試著用 keyMap 對照
+let finalLabel = topLabel;
+if(!finalLabel){
+  try {
+    const map = {
+      extravert:{playful:'淘氣',humorous:'幽默',lively:'活潑',generous:'大方'},
+      introvert:{calm:'冷靜',gentle:'文靜',steady:'沉穩',shy:'害羞'},
+      caring:{soft:'溫柔',kind:'善良',patient:'耐心',upbeat:'樂觀'},
+      decisive:{brave:'勇敢',confident:'自信',decisive:'果斷',independent:'獨立'},
+      analytic:{sharp:'敏銳',careful:'細心',smart:'聰明',cautious:'謹慎'}
+    };
+    const domain = sessionStorage.getItem('stage2_domain') || bestTypeKey;
+    const topKey = Object.keys(stage2)
+      .filter(k => k.startsWith(domain + ':'))
+      .sort((a,b)=>stage2[b]-stage2[a])[0]
+      ?.split(':')[1];
+    finalLabel = (map[domain] && map[domain][topKey]) || topKey || '';
+  } catch(e){}
+}
+
+const titleWord = (finalLabel || '旅人') + gSuffix;
 
     // 顯示結果
     document.getElementById('hello').textContent = `${player.name}！`;
