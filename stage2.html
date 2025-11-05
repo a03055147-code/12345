@@ -274,18 +274,37 @@ sessionStorage.setItem('stage2_domain', type);
       counterEl.textContent = (i+1)+' / '+items.length;
     }
 
-    function vote(k){
-      const key = type+':'+labelOf(k);
-      pool[key] = (pool[key]||0)+1;
-      localStorage.setItem(storeKey, JSON.stringify(pool));
-      i++;
-      if(i>=items.length){
-        // 回結果頁（將以第一階段最佳類型 + 第二階段最高分 label + 性別組成稱號）
-        location.href = 'stage3.html';
-      }else{
-        render();
-      }
-    }
+function vote(key){
+  const item = current.items[idx];
+  const chosen = item.opts.find(o => o.k === key);
+
+  // 累積計分邏輯
+  stage2Scores[type + ':' + key] = (stage2Scores[type + ':' + key] || 0) + 1;
+
+  // ✅ 新增紀錄行為
+  try { 
+    _pushChoice('s2', {k:key, t: chosen ? chosen.t : ''}); 
+  } catch(e){}
+  try {
+    sendLog({
+      stage:'stage2',
+      stage2Domain: type,
+      qIndex: idx+1,
+      optionKey: key,
+      optionText: chosen ? chosen.t : '',
+      type: key
+    });
+  } catch(e){ console.error(e); }
+
+  idx++;
+  if(idx >= current.items.length){
+    localStorage.setItem('handname_stage2', JSON.stringify(stage2Scores));
+    window.location.href = 'stage3.html';
+  }else{
+    render();
+  }
+}
+
 
     render();
   </script>
