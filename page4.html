@@ -171,17 +171,15 @@
   try{ _pushChoice('s1', {k:key, t: (chosen ? chosen.t : '')}); }catch(e){}
 
   // ✅ 等待 sendLog 完成再跳頁
-  try {
-    await sendLog({
-      stage:'stage1',
-      type:key,
-      qIndex: idx+1,
-      optionKey:key,
-      optionText: chosen ? chosen.t : ''
-    });
-  } catch(e) {
-    console.error(e);
-  }
+// 🚀 不等待伺服器回應，直接發送（非同步送出）
+sendLog({
+  stage:'stage1',
+  type:key,
+  qIndex: idx+1,
+  optionKey:key,
+  optionText: chosen ? chosen.t : ''
+}).catch(console.error);
+
 
   // 計分
   scores[key] = (scores[key]||0) + 1;
@@ -190,7 +188,7 @@
   if(idx >= questions.length){
     localStorage.setItem('handname_scores', JSON.stringify(scores));
     // ✅ 延遲 300ms，確保最後一筆紀錄送出
-    setTimeout(()=>window.location.href = 'stage2-intro.html', 500);
+    setTimeout(()=>window.location.href = 'stage2-intro.html',500);
   } else {
     render();
   }

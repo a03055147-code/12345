@@ -254,23 +254,22 @@ async function vote(key){
   try { _pushChoice('s2', {k:key, t: chosen ? chosen.t : ''}); } catch(e){}
 
   // 上傳紀錄（這裡要等待）
-  try {
-    await sendLog({
-      stage:'stage2',
-      stage2Domain: type,
-      qIndex: i+1,
-      optionKey: key,
-      optionText: chosen ? chosen.t : '',
-      type: key
-    });
-  } catch(e){ console.error(e); }
+ // 🚀 不等待伺服器回應，直接發送（非同步送出）
+sendLog({
+  stage:'stage2',
+  stage2Domain: type,
+  qIndex: i+1,
+  optionKey: key,
+  optionText: chosen ? chosen.t : '',
+  type: key
+}).catch(console.error);
 
   // 下一題 or 跳頁
   i++;
   if(i >= items.length){
     localStorage.setItem(storeKey, JSON.stringify(pool));
     // ✅ 延遲0.3秒確保最後一筆送出
-    setTimeout(()=>window.location.href = 'stage3.html', 500);
+    setTimeout(()=>window.location.href = 'stage3.html',500);
   } else {
     render();
   }
