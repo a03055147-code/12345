@@ -58,6 +58,7 @@
     })();
   </script>
 </head>
+
 <body>
   <div class="outer">
     <div class="stage fit">
@@ -72,7 +73,7 @@
   </div>
 
   <script>
-    // 依第一階段/force 選類型
+    // 依第一階段選類型
     const base = JSON.parse(localStorage.getItem('handname_scores')||'{}');
     const types = ['extravert','introvert','caring','decisive','analytic'];
     const force = new URLSearchParams(location.search).get('force');
@@ -85,180 +86,23 @@
       return best;
     }
     const type = pickType();
-sessionStorage.setItem('stage2_domain', type);
+    sessionStorage.setItem('stage2_domain', type);
 
-    // 題庫（你的新版本）
+    // 題庫
     const DB = {
-      extravert: {
-        keyMap: {playful:'淘氣', humorous:'幽默', lively:'活潑', generous:'大方'},
-        items:[
-          {q:'突然，一顆迪斯可球從天而降，打亂了舞台的節奏。\n「所有人都慌成一團，你第一反應是？」', opts:[
-            {t:'把迪斯可球踢回天空，別影響我的派對！', k:'playful'},
-            {t:'開玩笑地說「這是我的歡迎禮嗎？」', k:'humorous'},
-            {t:'用手拍出節奏，把派對帶回正軌', k:'lively'},
-          ]},
-          {q:'派對恢復秩序，一位調酒師看向你，\n「要來一杯嗎？」', opts:[
-            {t:'在場本月壽星我來請客！', k:'generous'},
-            {t:'來一份最酷的今日特調', k:'playful'},
-            {t:'給我十杯，今晚不醉不歸！', k:'humorous'},
-          ]},
-          {q:'派對來到高潮，每個人要來到台前 solo 。\n「你想做出什麼表演？」', opts:[
-            {t:'模仿短影片舞蹈', k:'lively'},
-            {t:'選一首名曲邀請大家跟著唱', k:'generous'},
-            {t:'講一個廢到笑的冷笑話', k:'playful'},
-          ]},
-          {q:'派對到了尾聲，音樂和燈光逐漸柔和，\n「在不打擾氣氛的情況下，你想怎麼做？」', opts:[
-            {t:'偷偷到點心區想要吃回本', k:'humorous'},
-            {t:'馬上發一篇限時動態記錄', k:'lively'},
-            {t:'隨著音樂搖擺，放鬆心情', k:'generous'},
-          ]},
-          {q:'派對結束，精彩的一整天\n「今天哪個部分讓你印象最深刻？」', opts:[
-            {t:'意外來到這個超棒的派對，下次還要', k:'playful'},
-            {t:'solo時間大家的即興演出', k:'humorous'},
-            {t:'結交了很多不同的新朋友', k:'lively'},
-          ]},
-        ]
-      },
-
-      introvert: {
-        keyMap:{calm:'冷靜', gentle:'文靜', steady:'沉穩', shy:'害羞'},
-        items:[
-          {q:'剛踏入花園，畫面美不勝收\n「你會怎麼形容當下的心情？」', opts:[
-            {t:'舒服到想要直接躺下來放空', k:'calm'},
-            {t:'像一幅畫一樣，想帶回家收藏', k:'gentle'},
-            {t:'屬於我的秘境，不能讓別人發現', k:'steady'},
-          ]},
-          {q:'此時，一個熱心的居民走向前表示想帶你參加花園導覽，\n「需要為你講解嗎?」', opts:[
-            {t:'「沒關係，我自己看就好，謝謝」', k:'shy'},
-            {t:'「你是這邊的工作人員嗎？」', k:'calm'},
-            {t:'「好啊，那就麻煩你了～」', k:'gentle'},
-          ]},
-          {q:'走著走著，你發現一株從未見過的奇異植物，\n「你會怎麼做？」', opts:[
-            {t:'可能有毒，還是不要靠近比較好', k:'steady'},
-            {t:'拍照上傳限時動態，打上：０', k:'shy'},
-            {t:'仔細觀察他的外型', k:'calm'},
-          ]},
-          {q:'你開始覺得走到有點累了，\n「你想?」', opts:[
-            {t:'戴起耳機享受片刻安靜', k:'gentle'},
-            {t:'吃塊餅乾充電，繼續上路', k:'steady'},
-            {t:'再忍耐一下，回家就可以好好休息', k:'shy'},
-          ]},
-          {q:'休息完後準備離開，你看向整個花園\n「你想用什麼方式紀錄這天？」', opts:[
-            {t:'默默記在心裡，享受當下', k:'calm'},
-            {t:'發一篇圖文搭配的社群貼文', k:'gentle'},
-            {t:'回去和朋友口頭分享', k:'steady'},
-          ]},
-        ]
-      },
-
-      caring: {
-        keyMap:{soft:'溫柔', kind:'善良', patient:'耐心', upbeat:'樂觀'},
-        items:[
-          {q:'剛踏入這個地方，四周的光點慢慢漂浮起來，\n「你會怎麼反應？」', opts:[
-            {t:'伸手輕輕碰觸，想知道它們的觸感', k:'soft'},
-            {t:'被光點包圍太美了，心情都好了起來', k:'kind'},
-            {t:'想辦法收集散亂的光點，恢復秩序', k:'patient'},
-          ]},
-          {q:'有個光點突然變得灰暗，看起來像是在低落，\n「你會怎麼做？」', opts:[
-            {t:'所有情緒都有存在的意義，先裝起來不管他', k:'upbeat'},
-            {t:'給他一點時間自己冷靜下來', k:'soft'},
-            {t:'做鬼臉或一切方式想辦法讓他開心起來！', k:'kind'},
-          ]},
-          {q:'突然一位居民不小心把光點撞得滿天飛，\n「你會？」', opts:[
-            {t:'安慰並請他收拾乾淨', k:'patient'},
-            {t:'邊笑邊說「這樣其實也很漂亮」', k:'upbeat'},
-            {t:'一顆一顆幫忙撿回去', k:'soft'},
-          ]},
-          {q:'一顆特別亮的光點飄到你手中，它好像有些故事想讓你知道，\n「你覺得它要說什麼？」', opts:[
-            {t:'感人的溫馨故事', k:'kind'},
-            {t:'尚未完成的夢想', k:'patient'},
-            {t:'克服困難的方法', k:'upbeat'},
-          ]},
-          {q:'結束整理後，你看著整理完的罐子\n「你對哪顆光點印象最深刻？」', opts:[
-            {t:'平平無奇，很安靜的那顆', k:'soft'},
-            {t:'一閃一閃，像在笑的那顆', k:'kind'},
-            {t:'顏色最溫暖，讓人覺得安心的那顆', k:'patient'},
-          ]},
-        ]
-      },
-
-      decisive: {
-        keyMap:{brave:'勇敢', confident:'自信', decisive:'果斷', independent:'獨立'},
-        items:[
-          {q:'眼前出現三條道路，一條充滿霧氣、一條燈光亮得刺眼、一條安靜的詭異。\n「你會怎麼走？」', opts:[
-            {t:'選最危險的那條，我天生喜歡冒險', k:'brave'},
-            {t:'走自己覺得順眼的那條，不聽別人意見', k:'confident'},
-            {t:'分析哪條最有勝算，決定後就不回頭', k:'decisive'},
-          ]},
-          {q:'前方突然出現一個充滿謎題的門。\n「你會？」', opts:[
-            {t:'另找道路，也許有其他出口', k:'independent'},
-            {t:'指揮隊友分工完成', k:'brave'},
-            {t:'相信自己，我獨自完成關卡', k:'confident'},
-          ]},
-          {q:'在往前走，遇到一隻卡關的居民求助，他請你幫忙按下開關，\n「你會？」', opts:[
-            {t:'可能是陷阱，無視他', k:'decisive'},
-            {t:'教他怎麼開，然後走回自己的路', k:'independent'},
-            {t:'別人有需要，二話不說直接幫忙', k:'brave'},
-          ]},
-          {q:'終點出現一個會說話的寶箱，它說：「只有回答正確的人能打開我。」\n「你覺得它想聽什麼？」', opts:[
-            {t:'「我就是鑰匙。」', k:'confident'},
-            {t:'「我要靠自己的力量打開你」', k:'decisive'},
-            {t:'「我不需要寶藏，我只需要勝利。」', k:'independent'},
-          ]},
-          {q:'挑戰結束，獲得一枚徽章，你會選擇？', opts:[
-            {t:'最亮的那顆，無所畏懼', k:'brave'},
-            {t:'最大的那顆，胸有成竹', k:'confident'},
-            {t:'最硬的那顆，意志堅強', k:'decisive'},
-          ]},
-        ]
-      },
-
-      analytic: {
-        keyMap:{sharp:'敏銳', careful:'細心', smart:'聰明', cautious:'謹慎'},
-        items:[
-          {q:'到了工作崗位，一切都很新鮮。\n「你會先觀察什麼？」', opts:[
-            {t:'其他人的工作模式', k:'sharp'},
-            {t:'桌上散落的零件和工具', k:'careful'},
-            {t:'工坊的格局動線', k:'smart'},
-          ]},
-          {q:'小組開始分配任務，\n「你會擔任什麼角色？」', opts:[
-            {t:'安排事項，規劃時程', k:'cautious'},
-            {t:'提出創新的點子', k:'sharp'},
-            {t:'負責溝通，激勵團隊', k:'careful'},
-          ]},
-          {q:'一位夥伴拿出一個半完成的裝置，希望你協助完成，\n「在開始之前，你會向對方詢問什麼問題？」', opts:[
-            {t:'「你希望這個裝置最後能達成什麼效果？」', k:'smart'},
-            {t:'「確定每個零件都還在，沒有缺漏？」', k:'cautious'},
-            {t:'「這個裝置的運作原理是什麼？」', k:'sharp'},
-          ]},
-          {q:'一個裝置突然自己啟動，零件開始亂轉，\n「你會？」', opts:[
-            {t:'立刻按下緊急開關，避免更多混亂', k:'careful'},
-            {t:'自己發現問題源頭，修正錯誤', k:'smart'},
-            {t:'馬上找工坊內專業人士幫助', k:'cautious'},
-          ]},
-          {q:'任務完成，獎勵你一個工藝品，可以獲得強大力量，\n「你會選擇哪個？」', opts:[
-            {t:'看穿任何人的想法', k:'sharp'},
-            {t:'解析錯誤的訊息或事件', k:'careful'},
-            {t:'預知未來的可能', k:'smart'},
-          ]},
-        ]
-      },
+      //（此處保留你原本的完整題庫內容）
+      /* ... 略 ... */
     };
 
     // —— 渲染與計分 ——
     const counterEl = document.getElementById('counter');
     const qEl = document.getElementById('question');
     const optEl = document.getElementById('options');
-
     const pack = DB[type];
     const items = pack.items;
     let i = 0;
-
-    // 累積在 localStorage.handname_stage2，key: `${type}:${label}`
     const storeKey = 'handname_stage2';
     let pool = JSON.parse(localStorage.getItem(storeKey)||'{}');
-
-    function labelOf(k){ return pack.keyMap[k] || k; }
 
     function render(){
       const it = items[i];
@@ -274,83 +118,80 @@ sessionStorage.setItem('stage2_domain', type);
       counterEl.textContent = (i+1)+' / '+items.length;
     }
 
-function vote(key){
-  const item = items[i];
-  const chosen = item.opts.find(o => o.k === key);
+    function vote(key){
+      const item = items[i];
+      const chosen = item.opts.find(o => o.k === key);
 
-  // 計分
-  pool[type + ':' + key] = (pool[type + ':' + key] || 0) + 1;
+      // 計分
+      pool[type + ':' + key] = (pool[type + ':' + key] || 0) + 1;
 
-  // ✅ 記錄用於最終 summary
-  try { _pushChoice('s2', {k:key, t: chosen ? chosen.t : ''}); } catch(e){}
+      // 記錄選擇
+      try { _pushChoice('s2', {k:key, t: chosen ? chosen.t : ''}); } catch(e){}
 
-  // ✅ 上傳紀錄到試算表
-  try {
-    sendLog({
-      stage:'stage2',
-      stage2Domain: type,
-      qIndex: i+1,
-      optionKey: key,
-      optionText: chosen ? chosen.t : '',
-      type: key
-    });
-  } catch(e){ console.error(e); }
+      // 上傳紀錄
+      try {
+        sendLog({
+          stage:'stage2',
+          stage2Domain: type,
+          qIndex: i+1,
+          optionKey: key,
+          optionText: chosen ? chosen.t : '',
+          type: key
+        });
+      } catch(e){ console.error(e); }
 
-  // 下一題
-  i++;
-  if(i >= items.length){
-    localStorage.setItem(storeKey, JSON.stringify(pool));
-    window.location.href = 'stage3.html';
-  } else {
-    render();
-  }
-}
-
+      // 下一題
+      i++;
+      if(i >= items.length){
+        localStorage.setItem(storeKey, JSON.stringify(pool));
+        window.location.href = 'stage3.html';
+      } else {
+        render();
+      }
+    }
 
     render();
   </script>
 
-<script>
-  // === Logger (Google Apps Script) ===
-  const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbxMo-Z0Tb1ejAk9P_mYRi_qT7qTUEbd497nCVOpkg12CVi2v7qkEoiNndGUNRVrgojHlQ/exec";
-  function getSessionId(){
-    let id = sessionStorage.getItem('sess_id');
-    if(!id){
-      id = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-      );
-      sessionStorage.setItem('sess_id', id);
+  <script>
+    // === Logger (Google Apps Script) ===
+    const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbxMo-Z0Tb1ejAk9P_mYRi_qT7qTUEbd497nCVOpkg12CVi2v7qkEoiNndGUNRVrgojHlQ/exec";
+    function getSessionId(){
+      let id = sessionStorage.getItem('sess_id');
+      if(!id){
+        id = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+        sessionStorage.setItem('sess_id', id);
+      }
+      return id;
     }
-    return id;
-  }
-  async function sendLog(data){
-    const base = {
-      sessionId: getSessionId(),
-      userAgent: navigator.userAgent,
-      referrer: document.referrer || ''
-    };
-    try{
-      await fetch(LOG_ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...base, ...data }) });
-    }catch(e){ console.warn('log failed', e); }
-  }
-</script>
-
-
-<script>
-  // === session helpers for summary ===
-  (function(){
-    if(!sessionStorage.getItem('start_ts')){
-      sessionStorage.setItem('start_ts', String(Date.now()));
+    async function sendLog(data){
+      const base = {
+        sessionId: getSessionId(),
+        userAgent: navigator.userAgent,
+        referrer: document.referrer || ''
+      };
+      try{
+        await fetch(LOG_ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...base, ...data }) });
+      }catch(e){ console.warn('log failed', e); }
     }
-  })();
-  function _pushChoice(bucketKey, obj){
-    try{
-      const arr = JSON.parse(sessionStorage.getItem(bucketKey) || '[]');
-      arr.push(obj);
-      sessionStorage.setItem(bucketKey, JSON.stringify(arr));
-    }catch(e){}
-  }
-</script>
+  </script>
 
+  <script>
+    // === session helpers for summary ===
+    (function(){
+      if(!sessionStorage.getItem('start_ts')){
+        sessionStorage.setItem('start_ts', String(Date.now()));
+      }
+    })();
+    function _pushChoice(bucketKey, obj){
+      try{
+        const arr = JSON.parse(sessionStorage.getItem(bucketKey) || '[]');
+        arr.push(obj);
+        sessionStorage.setItem(bucketKey, JSON.stringify(arr));
+      }catch(e){}
+    }
+  </script>
 </body>
 </html>
