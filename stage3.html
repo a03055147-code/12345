@@ -199,6 +199,29 @@
     document.getElementById('resultTitle').innerHTML =
       `<small>經過這次的旅程，我覺得你的手語名字可以叫</small>${titleWord}`;
 
+    try {
+      const startMs = Number(sessionStorage.getItem('start_ts')||Date.now());
+      const spentMs = Date.now() - startMs;
+      const s1 = (()=>{ try{return JSON.parse(sessionStorage.getItem('s1')||'[]');}catch(e){return [];} })();
+      const s2arr = (()=>{ try{return JSON.parse(sessionStorage.getItem('s2')||'[]');}catch(e){return [];} })();
+      const s1Texts = s1.map(x=>x.t).join(' / ');
+      const s2Texts = s2arr.map(x=>x.t).join(' / ');
+      const domain = sessionStorage.getItem('stage2_domain') || bestTypeKey;
+      const finalTitle = (topLabel || '') + (genderMap[player.gender]||'');
+      sendLog({
+        stage: 'summary',
+        answerTimeMs: spentMs,
+        name: player.name || '',
+        gender: player.gender || '',
+        stage1Answers: s1Texts,
+        stage1Domain: bestTypeKey,
+        stage2Domain: domain,
+        stage2Answers: s2Texts,
+        finalResult: finalTitle
+      });
+    } catch(e) {}
+
+
     try { sendLog({ stage:'result', type: bestTypeKey, qIndex: 0, optionKey: topLabel || '', optionText: topLabel || '', name: player.name || '', gender: player.gender || '' }); } catch(e) {}
 
     // 清除分數重新開始
@@ -238,7 +261,7 @@
 
 <script>
   // === Logger (Google Apps Script) ===
-  const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbw_cru6PWmQ_xt1qViqZxJfQnJ33uUHiPNMNAO5qcctHf4EAdcgMeZl1ygpsCAoZ_Ia9g/exec";
+  const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbxnsttUATCnaQYxFpL6Av7LZtCx8-2THMF6cy7ElEhYH0_AwMiawJETJEsjvDonbr3vNA/exec";
   function getSessionId(){
     let id = sessionStorage.getItem('sess_id');
     if(!id){

@@ -166,7 +166,9 @@
       if(!scoreKeys.includes(key)) return;
       const item = questions[idx];
       const chosen = item.opts.find(o => o.k === key);
-      try { sendLog({ stage:'stage1', type:key, qIndex: idx+1, optionKey:key, optionText: chosen ? chosen.t : '' }); } catch(e) {}
+      
+      try{ _pushChoice('s1', {k:key, t: (chosen? chosen.t : '')}); }catch(e){}
+try { sendLog({ stage:'stage1', type:key, qIndex: idx+1, optionKey:key, optionText: chosen ? chosen.t : '' }); } catch(e) {}
     scores[key] = (scores[key]||0) + 1;
       idx++;
       if(idx>=questions.length){
@@ -180,7 +182,7 @@
 
 <script>
   // === Logger (Google Apps Script) ===
-  const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbw_cru6PWmQ_xt1qViqZxJfQnJ33uUHiPNMNAO5qcctHf4EAdcgMeZl1ygpsCAoZ_Ia9g/exec";
+  const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbxnsttUATCnaQYxFpL6Av7LZtCx8-2THMF6cy7ElEhYH0_AwMiawJETJEsjvDonbr3vNA/exec";
   function getSessionId(){
     let id = sessionStorage.getItem('sess_id');
     if(!id){
@@ -200,6 +202,23 @@
     try{
       await fetch(LOG_ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ...base, ...data }) });
     }catch(e){ console.warn('log failed', e); }
+  }
+</script>
+
+
+<script>
+  // === session helpers for summary ===
+  (function(){
+    if(!sessionStorage.getItem('start_ts')){
+      sessionStorage.setItem('start_ts', String(Date.now()));
+    }
+  })();
+  function _pushChoice(bucketKey, obj){
+    try{
+      const arr = JSON.parse(sessionStorage.getItem(bucketKey) || '[]');
+      arr.push(obj);
+      sessionStorage.setItem(bucketKey, JSON.stringify(arr));
+    }catch(e){}
   }
 </script>
 
